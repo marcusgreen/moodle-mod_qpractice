@@ -182,12 +182,12 @@ function qpractice_user_complete($course, $user, $mod, $qpractice) {
 /**
  * Always returns false (?)
  *
- * @param int $course
+ * @param ? $course - not an int; called by block_recent_activity with $PAGE->course (see pagelib.php)
  * @param bool $viewfullnames
  * @param int $timestart
  * @return void
  */
-function qpractice_print_recent_activity(int $course, bool $viewfullnames, int $timestart) {
+function qpractice_print_recent_activity($course, bool $viewfullnames, int $timestart) {
     return false;  // True if anything was printed, otherwise false.
 }
 
