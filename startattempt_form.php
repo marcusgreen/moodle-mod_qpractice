@@ -32,7 +32,7 @@ require_once("$CFG->libdir/formslib.php");
  * Runs when the student makes an attempt
  *
  * @package    mod_qpractice
- * @copyright  2019 Marcus Green
+ * @copyright  2022 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_qpractice_startattempt_form extends moodleform {
@@ -52,8 +52,11 @@ class mod_qpractice_startattempt_form extends moodleform {
         if (count($categories) > 1) {
             $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
             $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
-        }else{
-            $mform->addElement('static', 'categories', get_string('category'), reset($categories));
+        } else {
+            $mform->addElement('hidden', 'categories', array_key_first($categories));
+            $mform->setType('categories', PARAM_TEXT);
+            $mform->addElement('static', 'categoryshow', get_string('category'), reset($categories));
+
         }
 
         $mform->addElement('select', 'behaviour', get_string('behaviour', 'qpractice'), $this->_customdata['behaviours']);

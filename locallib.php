@@ -65,10 +65,12 @@ function qpractice_get_question_categories(\context $context, int $top=null) : a
     $options = [];
     /* Get all categories in course/system context (for settings form) */
     if (get_config('qpractice', 'systemcontext')) {
-        $questioncats = question_category_options([context_system::instance()]);
+        $questioncats = qbank_managecategories\helper::question_category_options([context_system::instance()]);
+        // $questioncats = question_category_options([context_system::instance()]);
     }
 
-    $coursecats = question_category_options([$context]);
+    $coursecats = qbank_managecategories\helper::question_category_options([$context]);
+    // $coursecats = question_category_options([$context]);
     $key = key($coursecats);
     $questioncats[$key] = $coursecats[$key];
 
@@ -101,6 +103,7 @@ function qpractice_get_question_categories(\context $context, int $top=null) : a
  */
 function qpractice_session_create(stdClass $fromform, \context $context) : int {
     global $DB, $USER;
+    $X = optional_param('xx', 1, PARAM_INT);
 
     $qpractice = new stdClass();
      /* $value = $fromform->optiontype;
