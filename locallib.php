@@ -68,6 +68,14 @@ function qpractice_get_question_categories(\context $context, int $top=null) : a
     if (get_config('qpractice', 'systemcontext')) {
         $questioncats = question_category_options([context_system::instance()]);
     }
+    $categories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
+
+
+   // function buildTree($tree_array, $display_field, $children_field, $class='', $id='', $recursionDepth = 0, $maxDepth = false)
+
+    $tree = buildTree($categories,1);
+
+
 
     $coursecats = question_category_options([$context]);
     $key = key($coursecats);
@@ -91,6 +99,59 @@ function qpractice_get_question_categories(\context $context, int $top=null) : a
     }
 
     return $options;
+}
+// function preOrder(array $node)
+// {
+//     // First we visit the node itself.
+//     $output= [];
+
+//     // Then apply the algorithm to every child from left -> right.
+//     foreach ($node as $branch) {
+//         $output[] = preOrder($branch->children ?? [] );
+//     }
+
+//     return implode(', ', $output);
+// }
+
+function x_buildTree($tree_array, $display_field, $children_field, $class='', $id='', $recursionDepth = 0, $maxDepth = false)
+{
+    if ($maxDepth && ($recursionDepth == $maxDepth)) return;
+
+    echo "<ul>\n";
+
+    foreach ($tree_array as $row)
+    {
+        echo "<li>\n";
+        echo $row->name . "\n";
+
+        if (isset($row->children))
+            $this->buildTree($row[$children_field], $display_field, $children_field, $class, $id, $recursionDepth + 1, $maxDepth);
+
+        echo "</li>\n";
+    }
+    echo "</ul>\n";
+}
+
+function buildTree($elements, $parentId = 0) {
+    $branch = array();
+    echo "<ul>\n";
+    foreach ($elements as $element) {
+        if ($element->parent  === (string) $parentId) {
+            echo "<li>\n";
+            echo $element->name . "\n";
+            $children = buildTree($elements, $element->id);
+            if ($children) {
+                $element->children = $children;
+            }
+            echo "</li>\n";
+            $element->name;
+            $branch[] = $element;
+        }
+
+    }
+    echo "</ul>\n";
+
+    return $branch;
 }
 
 /**
