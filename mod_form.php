@@ -78,18 +78,28 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         $course = $this->get_course();
         $coursecontext = context_course::instance($course->id);
-        $categories = qpractice_get_question_categories($coursecontext);
-
         $topcategory = null;
-        $categories = qpractice_get_question_categories($coursecontext, $topcategory);
+        $categories = qpractice_get_question_categories($coursecontext,$topcategory, $mform);
+
+        // $topcategory = null;
+        // $categories = qpractice_get_question_categories($coursecontext, $topcategory);
+
+        $cbx[] = $mform->createElement('advcheckbox','one');
+
+        $cbx[] = $mform->createElement('advcheckbox','two');
+
+        $mform->addGroup($cbx,'mavg');
+
 
         $mform->addElement('html', '<div class="categories">');
 
-        foreach ($categories as $key => $c) {
-            $row = [];
-            $row[] = $mform->createElement('checkbox', $key, '', $c);
-            $mform->addGroup($row, 'categories');
-        }
+        $el = $mform->createElement('html',$categories);
+
+        $this->add_checkbox_controller(1);
+
+
+        $mform->addGroup([$el],'topcategory');
+
 
         $mform->addElement('html', '</div>');
 
@@ -165,10 +175,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @param stdClass $data the form data to be modified.
      */
     public function data_postprocessing($data) {
-        if ($data->displaytype['selectcategories'] == 'selectcat') {
-            $data->topcategory = null;
-        }
-        parent::data_postprocessing($data);
+
+        // if ($data->displaytype['selectcategories'] == 'selectcat') {
+        //     $data->topcategory = null;
+        // }
+        // parent::data_postprocessing($data);
     }
 
     /**
@@ -183,11 +194,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
         }
-        if ($data['selectcategories'] == 1) {
-            if (empty($data['categories'])) {
-                $errors['displaytype'] = get_string('atleastonecategory', 'qpractice');
-            }
-        }
+        // if ($data['selectcategories'] == 1) {
+        //     if (empty($data['categories'])) {
+        //         $errors['displaytype'] = get_string('atleastonecategory', 'qpractice');
+        //     }
+        // }
         return $errors;
     }
 

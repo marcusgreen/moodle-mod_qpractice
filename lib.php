@@ -106,6 +106,7 @@ function upsert_categories(stdClass $qpractice){
  */
 function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
     global $DB;
+    $qpractice->categories= optional_param_array('categories',null,PARAM_INT);
 
     $qpractice->timemodified = time();
     $qpractice->id = $qpractice->instance;

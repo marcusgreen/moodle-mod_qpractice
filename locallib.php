@@ -59,7 +59,8 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-function qpractice_get_question_categories(\context $context, int $top=null) : array {
+$html = '';
+function qpractice_get_question_categories(\context $context, int $top=null, $mform) : string {
     if (empty($context)) {
         return [];
     }
@@ -70,69 +71,94 @@ function qpractice_get_question_categories(\context $context, int $top=null) : a
     }
     $categories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
 
-
-   // function buildTree($tree_array, $display_field, $children_field, $class='', $id='', $recursionDepth = 0, $maxDepth = false)
-
-    $tree = buildTree($categories,1);
-
-
-
-    $coursecats = question_category_options([$context]);
-    $key = key($coursecats);
-    $questioncats[$key] = $coursecats[$key];
-
-    if (!empty($questioncats)) {
-        foreach ($questioncats as $questioncatcourse) {
-            foreach ($questioncatcourse as $key => $questioncat) {
-                // Key format is [question cat id, question cat context id], we need to explode it.
-                $questidcontext = explode(',', $key);
-                $questid = array_shift($questidcontext);
-                $options[$questid] = $questioncat;
-            }
-        }
-    }
-    if ($top) {
-        /* Get sub categories (for runtime)*/
-        $catlist = question_categorylist($top);
-        /* Filter out stuff up the hierarchy */
-        $options = array_intersect_key($options, $catlist);
-    }
-
-    return $options;
+    $ct = new catTree();
+    $ct->buildTree($categories,1, $mform);
+    $ct->html =  '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
+    '.$ct->html;
+    $ct->html .= '</div>';
+    return $ct->html;
 }
-// function preOrder(array $node)
-// {
-//     // First we visit the node itself.
-//     $output= [];
 
-//     // Then apply the algorithm to every child from left -> right.
-//     foreach ($node as $branch) {
-//         $output[] = preOrder($branch->children ?? [] );
-//     }
+function __buildTree($elements, $parentId = 0, $mform) {
+    $branch = array();
+    $html .=  "<ul>\n";
+    foreach ($elements as $element) {
+        if ($element->parent  === (string) $parentId) {
+            $html .= "<li>\n";
+            $html .= $element->name . "\n";
+            echo $element->name . "\n";
+            $children = buildTree($elements, $element->id, $mform);
+            if ($children) {
+                $element->children = $children;
+            }
+            $html.=  "</li>\n";
+            echo "</li>\n";
+            $element->name;
+            $branch[] = $element;
+        }
 
-//     return implode(', ', $output);
-// }
-
-function x_buildTree($tree_array, $display_field, $children_field, $class='', $id='', $recursionDepth = 0, $maxDepth = false)
-{
-    if ($maxDepth && ($recursionDepth == $maxDepth)) return;
-
-    echo "<ul>\n";
-
-    foreach ($tree_array as $row)
-    {
-        echo "<li>\n";
-        echo $row->name . "\n";
-
-        if (isset($row->children))
-            $this->buildTree($row[$children_field], $display_field, $children_field, $class, $id, $recursionDepth + 1, $maxDepth);
-
-        echo "</li>\n";
     }
     echo "</ul>\n";
+    $html .=  "</ul>\n";
+
+    return $branch;
+}
+class _catTree {
+    public $html;
+
+    public function buildTree($elements, $parentId = 0, $mform) {
+        $branch = [];
+        $this->fields;
+        foreach ($elements as $element) {
+            if ($element->parent  === (string) $parentId) {
+                $this->html .= "<li>";
+                $this->html .= $element->name ;
+                $questioncount = '&nbsp;('.$element->questioncount.')';
+                $id = 'categories['.$element->id.']';
+                $this->fields[] .=  $mform->createElement('advcheckbox', $element->id);
+                $children = $this->buildTree($elements, $element->id, $mform);
+                if ($children) {
+                    $element->children = $children;
+                }
+                $this->html.=  "</li>";
+                $element->name;
+                $branch[] = $element;
+            }
+        }
+        $this->html .=  "</ul>";
+        return $branch;
+    }
+
 }
 
-function buildTree($elements, $parentId = 0) {
+class catTree {
+    public $html;
+
+    public function buildTree($elements, $parentId = 0, $mform) {
+        $branch = array();
+        $this->html .=  "<ul>\n";
+        foreach ($elements as $element) {
+            if ($element->parent  === (string) $parentId) {
+                $this->html .= "<li>\n";
+                $this->html .= $element->name ;
+                $questioncount = '&nbsp;('.$element->questioncount.')';
+                $id = 'categories['.$element->id.']';
+                $this->html .=  '&nbsp;'.$mform->createElement('checkbox',$id,'','',['group'=>1])->toHtml().$questioncount;
+                $children = $this->buildTree($elements, $element->id, $mform);
+                if ($children) {
+                    $element->children = $children;
+                }
+                $this->html.=  "</li>\n";
+                $element->name;
+                $branch[] = $element;
+            }
+        }
+        $this->html .=  "</ul>\n";
+        return $branch;
+    }
+
+}
+function _buildTree($elements, $parentId = 0) {
     $branch = array();
     echo "<ul>\n";
     foreach ($elements as $element) {
