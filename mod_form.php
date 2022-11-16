@@ -79,26 +79,15 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $course = $this->get_course();
         $coursecontext = context_course::instance($course->id);
         $topcategory = null;
-        $categories = qpractice_get_question_categories($coursecontext,$topcategory, $mform);
-
-        // $topcategory = null;
-        // $categories = qpractice_get_question_categories($coursecontext, $topcategory);
-
-        $cbx[] = $mform->createElement('advcheckbox','one');
-
-        $cbx[] = $mform->createElement('advcheckbox','two');
-
-        $mform->addGroup($cbx,'mavg');
-
+        $categories = qpractice_get_question_categories($coursecontext, $topcategory, $mform);
 
         $mform->addElement('html', '<div class="categories">');
 
-        $el = $mform->createElement('html',$categories);
 
+        $el = $mform->createElement('html', $categories);
         $this->add_checkbox_controller(1);
 
-
-        $mform->addGroup([$el],'topcategory');
+        $mform->addGroup([$el], 'categories');
 
 
         $mform->addElement('html', '</div>');
@@ -189,8 +178,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @param array $files
      * @return array
      */
-    public function validation($data, $files): array{
+    public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
+        $categories = optional_param_array('categories', '', PARAM_INT );
+        if (!$categories) {
+            $errors['categories'] ='No categories selected';
+        }
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
         }

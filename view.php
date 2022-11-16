@@ -48,7 +48,7 @@ $params = array(
     'objectid' => $cm->id,
     'context' => $context
 );
-$event = \mod_qpractice\event\qpractice_viewed::create($params);
+$event = mod_qpractice\event\qpractice_viewed::create($params);
 $event->trigger();
 
 $PAGE->set_url('/mod/qpractice/view.php', array('id' => $cm->id));

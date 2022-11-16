@@ -25,9 +25,6 @@
 
 namespace mod_qpractice\event;
 
-defined('MOODLE_INTERNAL') || die();
-
-
 /**
  * The qpractice_viewed event.
  *

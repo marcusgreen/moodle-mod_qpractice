@@ -59,7 +59,6 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-$html = '';
 function qpractice_get_question_categories(\context $context, int $top=null, $mform) : string {
     if (empty($context)) {
         return [];
@@ -72,64 +71,13 @@ function qpractice_get_question_categories(\context $context, int $top=null, $mf
     $categories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
 
     $ct = new catTree();
-    $ct->buildTree($categories,1, $mform);
+    $ct->buildTree($categories, 1, $mform);
     $ct->html =  '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
     '.$ct->html;
     $ct->html .= '</div>';
     return $ct->html;
 }
 
-function __buildTree($elements, $parentId = 0, $mform) {
-    $branch = array();
-    $html .=  "<ul>\n";
-    foreach ($elements as $element) {
-        if ($element->parent  === (string) $parentId) {
-            $html .= "<li>\n";
-            $html .= $element->name . "\n";
-            echo $element->name . "\n";
-            $children = buildTree($elements, $element->id, $mform);
-            if ($children) {
-                $element->children = $children;
-            }
-            $html.=  "</li>\n";
-            echo "</li>\n";
-            $element->name;
-            $branch[] = $element;
-        }
-
-    }
-    echo "</ul>\n";
-    $html .=  "</ul>\n";
-
-    return $branch;
-}
-class _catTree {
-    public $html;
-
-    public function buildTree($elements, $parentId = 0, $mform) {
-        $branch = [];
-        $this->fields;
-        foreach ($elements as $element) {
-            if ($element->parent  === (string) $parentId) {
-                $this->html .= "<li>";
-                $this->html .= $element->name ;
-                $questioncount = '&nbsp;('.$element->questioncount.')';
-                $id = 'categories['.$element->id.']';
-                $this->fields[] .=  $mform->createElement('advcheckbox', $element->id);
-                $children = $this->buildTree($elements, $element->id, $mform);
-                if ($children) {
-                    $element->children = $children;
-                }
-                $this->html.=  "</li>";
-                $element->name;
-                $branch[] = $element;
-            }
-        }
-        $this->html .=  "</ul>";
-        return $branch;
-    }
-
-}
 
 class catTree {
     public $html;
@@ -157,27 +105,6 @@ class catTree {
         return $branch;
     }
 
-}
-function _buildTree($elements, $parentId = 0) {
-    $branch = array();
-    echo "<ul>\n";
-    foreach ($elements as $element) {
-        if ($element->parent  === (string) $parentId) {
-            echo "<li>\n";
-            echo $element->name . "\n";
-            $children = buildTree($elements, $element->id);
-            if ($children) {
-                $element->children = $children;
-            }
-            echo "</li>\n";
-            $element->name;
-            $branch[] = $element;
-        }
-
-    }
-    echo "</ul>\n";
-
-    return $branch;
 }
 
 /**

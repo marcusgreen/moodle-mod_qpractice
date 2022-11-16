@@ -52,10 +52,9 @@ class mod_qpractice_startattempt_form extends moodleform {
         if (count($categories) > 1) {
             $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
             $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
-        }else{
+        } else {
             $mform->addElement('static', 'categories', get_string('category'), reset($categories));
         }
-
         $mform->addElement('select', 'behaviour', get_string('behaviour', 'qpractice'), $this->_customdata['behaviours']);
 
         $this->add_action_buttons(true, get_string('startpractice', 'qpractice'));

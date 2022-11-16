@@ -23,11 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-namespace qpractice\attempt;
-
-defined('MOODLE_INTERNAL') || die();
-
-namespace mod_qpractice\event;
+namespace mod_qpractice\attempt;
 
 /**
  * Log attempts
