@@ -79,7 +79,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $course = $this->get_course();
         $coursecontext = context_course::instance($course->id);
         $topcategory = null;
-        $categories = qpractice_get_question_categories($coursecontext, $topcategory, $mform);
+        $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
 
         $mform->addElement('html', '<div class="categories">');
 

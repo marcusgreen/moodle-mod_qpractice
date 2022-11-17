@@ -59,7 +59,7 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-function qpractice_get_question_categories(\context $context, int $top=null, $mform) : string {
+function qpractice_get_question_categories(\context $context, $mform, int $top=null, array $categories=null) : string {
     if (empty($context)) {
         return [];
     }
@@ -68,16 +68,15 @@ function qpractice_get_question_categories(\context $context, int $top=null, $mf
     if (get_config('qpractice', 'systemcontext')) {
         $questioncats = question_category_options([context_system::instance()]);
     }
-    $categories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
+    $contextcategories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
 
     $ct = new catTree();
-    $ct->buildTree($categories, 1, $mform);
+    $ct->buildTree($contextcategories, 1, $mform);
     $ct->html =  '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
     '.$ct->html;
     $ct->html .= '</div>';
     return $ct->html;
 }
-
 
 class catTree {
     public $html;

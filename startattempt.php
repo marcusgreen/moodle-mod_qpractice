@@ -43,7 +43,18 @@ if ($id) {
         print_error('coursemisconf');
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
-    $qpractice_categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $cm->id]);
+
+    $sql = "SELECT qpcat.categoryid,qcat.name
+            FROM {qpractice_categories} qpcat
+            JOIN {question_categories} qcat
+            ON qpcat.categoryid = qcat.id
+            WHERE qpcat.qpracticeid = :qpracticeid";
+
+    $categories = $DB->get_records_sql($sql, ['qpracticeid' => $id]);
+
+    $x=1;
+
+    // $qpractice_categories = $DB->get_field('qpractice_categories', ['qpracticeid' => $cm->id]);
 }
 
 require_login($course, true, $cm);
