@@ -34,6 +34,7 @@ $id = required_param('id', PARAM_INT); // Course_module ID.
 
 $PAGE->set_url('/mod/qpractice/startattempt.php', array('id' => $id));
 $DB->set_field('qpractice_session', 'status', 'finished', null);
+xdebug_break();
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
@@ -52,8 +53,6 @@ if ($id) {
 
     $categories = $DB->get_records_sql($sql, ['qpracticeid' => $id]);
 
-    $x=1;
-
     // $qpractice_categories = $DB->get_field('qpractice_categories', ['qpracticeid' => $cm->id]);
 }
 
@@ -63,7 +62,7 @@ global $PAGE;
 $context = context_module::instance($cm->id);
 $coursecontext = $context->get_course_context();
 /** mavg */
-$categories = qpractice_get_question_categories($coursecontext, $qpractice->topcategory);
+$categorytree = qpractice_get_question_categories($coursecontext, null, $categories);
 
 $behaviours = get_options_behaviour($cm);
 
