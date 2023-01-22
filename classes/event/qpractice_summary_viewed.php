@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The qpractice_viewed event.
+ * The qpractice_summary_viewed event.
  *
  * @package    mod_qpractice
  * @copyright  2015 Marcus Green
@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_qpractice\attempt;
+namespace mod_qpractice\event;
 
 /**
  * The qpractice_viewed event.

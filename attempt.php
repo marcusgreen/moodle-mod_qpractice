@@ -26,6 +26,10 @@ require_once($CFG->libdir . '/questionlib.php');
 require_once(dirname(__FILE__) . '/locallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
+use \mod_qpractice\event\qpractice_attempted;
+use \mod_qpractice\event\qpractice_finished;
+
+
 $sessionid = required_param('id', PARAM_INT);
 $session = $DB->get_record('qpractice_session', array('id' => $sessionid));
 
@@ -40,7 +44,8 @@ $params = array(
     'objectid' => $cm->id,
     'context' => $context
 );
-$event = \mod_qpractice\event\qpractice_attempted::create($params);
+
+$event = qpractice_attempted::create($params);
 $event->trigger();
 
 $quba = question_engine::load_questions_usage_by_activity($session->questionusageid);
@@ -79,7 +84,7 @@ if (data_submitted()) {
             'objectid' => $cm->id,
             'context' => $context
         );
-        $event = \mod_qpractice\event\qpractice_finished::create($params);
+        $event = qpractice_finished::create($params);
         $event->trigger();
         redirect($stopurl);
     } else {

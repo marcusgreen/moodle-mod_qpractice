@@ -23,7 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 
-namespace mod_qpractice\attempt;
+namespace mod_qpractice\event;
 
 /**
  * Log attempts

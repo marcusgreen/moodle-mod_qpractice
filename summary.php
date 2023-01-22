@@ -27,6 +27,8 @@ require_once($CFG->libdir . '/questionlib.php');
 require_once(dirname(__FILE__) . '/renderer.php');
 require_once("$CFG->libdir/formslib.php");
 
+use \mod_qpractice\event\qpractice_summary_viewed;
+
 $sessionid = required_param('id', PARAM_INT); // Sessionid.
 $session = $DB->get_record('qpractice_session', array('id' => $sessionid));
 $cm = get_coursemodule_from_instance('qpractice', $session->qpracticeid);
@@ -41,7 +43,10 @@ $params = array(
     'context' => $context
 );
 
-$event = \mod_qpractice\event\qpractice_summary_viewed::create($params);
+// $event = \mod_qpractice\event\qpractice_summary_viewed::create($params);
+
+$event = qpractice_summary_viewed::create($params);
+
 $event->trigger();
 
 $actionurl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $sessionid));

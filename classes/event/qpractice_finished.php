@@ -23,8 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qmod_practice\finish;
-
+namespace mod_qpractice\event;
 /**
  * The qpractice_viewed event.
  *
@@ -51,7 +50,7 @@ class qpractice_finished extends \core\event\base {
      * @return string
      */
     public function get_description() : string {
-        return "On course: {$this->courseid} qpracticeid: {$this->objectid} was attempted";
+        return "On course: {$this->courseid} qpracticeid: {$this->objectid} was finished";
     }
 
 }

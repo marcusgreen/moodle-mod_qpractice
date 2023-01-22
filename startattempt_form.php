@@ -50,8 +50,15 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
         $categories = $this->_customdata['categories'];
         if (count($categories) > 1) {
-            $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
-            $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
+
+            foreach ($categories as $category) {
+                // $mform->addElement('checkbox', 'categoriy', 'Category', $category->name);
+               $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
+
+            }
+            $mform->addGroup($cbx, 'categories', 'Categorie');
+            // $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
+            // $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
         } else {
             $mform->addElement('static', 'categories', get_string('category'), reset($categories));
         }
