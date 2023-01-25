@@ -29,7 +29,6 @@ require_once($CFG->libdir . '/filelib.php');
 use \mod_qpractice\event\qpractice_attempted;
 use \mod_qpractice\event\qpractice_finished;
 
-
 $sessionid = required_param('id', PARAM_INT);
 $session = $DB->get_record('qpractice_session', array('id' => $sessionid));
 
@@ -44,7 +43,6 @@ $params = array(
     'objectid' => $cm->id,
     'context' => $context
 );
-
 $event = qpractice_attempted::create($params);
 $event->trigger();
 
@@ -84,6 +82,7 @@ if (data_submitted()) {
             'objectid' => $cm->id,
             'context' => $context
         );
+
         $event = qpractice_finished::create($params);
         $event->trigger();
         redirect($stopurl);

@@ -49,6 +49,7 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->setDisableShortForms(true);
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
         $categories = $this->_customdata['categories'];
+        xdebug_break();
         if (count($categories) > 1) {
 
             foreach ($categories as $category) {
@@ -60,7 +61,13 @@ class mod_qpractice_startattempt_form extends moodleform {
             // $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
             // $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
         } else {
-            $mform->addElement('static', 'categories', get_string('category'), reset($categories));
+            $category = reset($categories);
+            $mform->addElement('static', 'category', get_string('category'), $category->name);
+            $categoryelement[] = $mform->createElement('advcheckbox', $category->categoryid, null, null, ['hidden=true']);
+
+            $mform->addGroup($categoryelement, 'categories');
+            //$mform->addElement('hidden', 'categories', $category->categoryid);
+            // $mform->setType('categories', PARAM_INT);
         }
         $mform->addElement('select', 'behaviour', get_string('behaviour', 'qpractice'), $this->_customdata['behaviours']);
 

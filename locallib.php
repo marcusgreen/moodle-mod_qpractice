@@ -157,7 +157,7 @@ function qpractice_session_create(stdClass $fromform, \context $context) : int {
 
     $qpractice->questionusageid = $quba->get_id();
     $sessionid = $DB->insert_record('qpractice_session', $qpractice);
-
+    xdebug_break();
     foreach ($fromform->categories as $categoryid => $value) {
         $DB->insert_record('qpractice_session_cats', ['category' => $categoryid, 'session' => $sessionid]);
     }
@@ -190,12 +190,6 @@ function qpractice_delete_attempt(int $sessionid) {
  * @return array
  */
 function get_available_questions_from_categories(array $categories) : array {
-    // if (question_categorylist($categoryid)) {
-    //     $categoryids = question_categorylist($categoryid);
-    // } else {
-    //     $categoryids = [$categoryid];
-    // }
-    // return true;
     xdebug_break();
     /**@todo not implemented ? */
     $excludedqtypes = null;
@@ -214,8 +208,7 @@ function get_available_questions_from_categories(array $categories) : array {
  */
 function choose_other_question(array $categories, array $excludedquestions, bool $allowshuffle = true) {
 
-    xdebug_break();
-    $available = get_available_questions_from_categories(array_keys($categories));
+    $available = get_available_questions_from_categories($categories);
     shuffle($available);
 
     foreach ($available as $questionid) {
@@ -263,10 +256,11 @@ function get_next_question(int $sessionid, question_usage_by_activity $quba) : i
     global $DB;
 
     $session = $DB->get_record('qpractice_session', ['id' => $sessionid]);
-    $categories = $DB->get_records('qpractice_session_cats', ['session' => $sessionid]);
+    $categories = $DB->get_records('qpractice_session_cats', ['session' => $sessionid], '', 'category');
     $results = $DB->get_records_menu('question_attempts', array('questionusageid' => $session->questionusageid),
             'id', 'id, questionid');
-
+    xdebug_break();
+    $categories = $DB->get_records_menu('qpractice_session_cats', ['session' => $sessionid], '', 'id, category');
     $questionid = choose_other_question($categories, $results);
 
     if ($questionid == null) {
