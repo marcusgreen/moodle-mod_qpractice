@@ -60,6 +60,7 @@ function qpractice_make_default_categories($context) {
  *
  */
 function qpractice_get_question_categories(\context $context, $mform, int $top=null, array $categories=null) : string {
+    global $DB;
     if (empty($context)) {
         return [];
     }
@@ -68,7 +69,18 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     if (get_config('qpractice', 'systemcontext')) {
         $questioncats = question_category_options([context_system::instance()]);
     }
+
+    $instanceid = optional_param('update', null, PARAM_INT);
+
     $contextcategories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
+    $instancecategories = $DB->get_records_menu('qpractice_categories', ['qpracticeid' => $instanceid], '', 'id, categoryid');
+    foreach ($contextcategories as $category) {
+        if (in_array($category->id, $instancecategories)) {
+            $category->checked = true;
+        } else {
+            $category->checked = false;
+        }
+    }
 
     $ct = new catTree();
     $ct->buildtree($mform, $contextcategories, 1);
@@ -81,16 +93,18 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
 class catTree {
     public $html;
 
-    public function buildtree($mform, $elements, $parentId = 0) {
+    public function buildtree($mform, $elements, $parentid = 0) {
         $branch = array();
         $this->html .= "<ul>\n";
         foreach ($elements as $element) {
-            if ($element->parent === (string) $parentId) {
+            if ($element->parent === (string) $parentid) {
                 $this->html .= "<li>\n";
-                $this->html .= $element->name ;
+                $this->html .= $element->name;
                 $questioncount = '&nbsp;('.$element->questioncount.')';
                 $id = 'categories['.$element->id.']';
-                $this->html .= '&nbsp;'.$mform->createElement('checkbox', $id,'', '', ['group' => 1])->toHtml().$questioncount;
+                $checked = ($element->checked) ? "checked" : "";
+                $this->html .= '&nbsp;'.$mform->createElement('checkbox', $id, '', '', [$checked, 'group' => 1])->toHtml().$questioncount;
+
                 $children = $this->buildTree($mform, $elements, $element->id);
                 if ($children) {
                     $element->children = $children;

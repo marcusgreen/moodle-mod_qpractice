@@ -42,7 +42,6 @@ require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
 
-xdebug_break();
 require_capability('mod/qpractice:view', $context);
 
 $params = array(
