@@ -108,6 +108,7 @@ if (data_submitted()) {
 }
 
 $options = new question_display_options();
+$options->flags = false;
 $headtags = '';
 $headtags .= $quba->render_question_head_html($slot);
 $headtags .= question_engine::initialise_js();
