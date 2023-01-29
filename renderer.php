@@ -106,12 +106,11 @@ class mod_qpractice_renderer extends plugin_renderer_base {
         $canviewmyreports = has_capability('mod/qpractice:viewmyreport', $context);
 
         if ($canviewmyreports) {
-            $session = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance, 'userid' => $USER->id));
+            $sessions = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance, 'userid' => $USER->id));
         } if ($canviewallreports) {
-            $session = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance));
+            $sessions = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance));
         }
-
-        if ($session != null) {
+        if ($sessions != null) {
             $table = new html_table();
             $table->attributes['class'] = 'generaltable qpracticesummaryofpractices boxaligncenter';
             $table->caption = get_string('pastsessions', 'qpractice');
@@ -122,18 +121,19 @@ class mod_qpractice_renderer extends plugin_renderer_base {
             $table->align = array('left', 'left', 'left', 'left', 'left', 'left', 'left');
             $table->size = array('', '', '', '', '', '', '', '');
             $table->data = array();
-            foreach ($session as $qpractice) {
-                $date = $qpractice->practicedate;
-                $categoryid = $qpractice->categoryid;
 
-                $category = $DB->get_records_menu('question_categories', array('id' => $categoryid), 'name');
+            foreach ($sessions as $session) {
+                $sessioncats = $DB->get_records_menu('qpractice_session_cats', ['session' => $session->id], '', 'id, category');
+                $session->sessioncats = $sessioncats;
+                $date = $session->practicedate;
+
                 /* If the category has been deleted, jump to the next session */
-                if (empty($category)) {
+                if (empty($sessioncats)) {
                     continue;
                 }
-                $table->data[] = array(userdate($date), $category[$categoryid],
-                    $qpractice->marksobtained . '/' . $qpractice->totalmarks,
-                    $qpractice->totalnoofquestions, $qpractice->totalnoofquestionsright);
+                $table->data[] = array(userdate($date),
+                    $session->marksobtained . '/' . $session->totalmarks,'x',
+                    $session->totalnoofquestions, $session->totalnoofquestionsright);
             }
             echo html_writer::table($table);
         } else {

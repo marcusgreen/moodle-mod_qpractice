@@ -48,9 +48,9 @@ class mod_qpractice_startattempt_form extends moodleform {
         /* Stops headers being collapsible */
         $mform->setDisableShortForms(true);
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
+        $mform->setType('eranchor', PARAM_TEXT);
         $categories = $this->_customdata['categories'];
         if (count($categories) > 1) {
-
             foreach ($categories as $category) {
                 $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
             }
@@ -70,6 +70,29 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'instanceid', $this->_customdata['instanceid']);
         $mform->setType('instanceid', PARAM_INT);
+    }
+
+    /**
+     * Check the question text is valid, specifically that
+     * it contains at lease one gap (text surrounded by delimiters
+     * as in [cat]
+     *
+     * @param array $fromform
+     * @param array $data
+     * @return boolean
+     */
+    public function validation($fromform, $data) {
+        $errors = [];
+        if (!isset($fromform['categories'])) {
+            $msg = get_string('error:atleastonecategory', 'qpractice');
+            \core\notification::add($msg, \core\notification::WARNING);
+            $errors['true'] = true;
+        }
+        if ($errors) {
+            return $errors;
+        } else {
+            return true;
+        }
     }
 
 }
