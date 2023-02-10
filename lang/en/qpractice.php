@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['resumepractice'] = 'Resume Practice';
 $string['backurl'] = 'Go back to main page';
+$string['behaviours'] = 'Behaviours';
+$string['categories'] = 'Categories';
 $string['continueurl'] = 'Continue last session';
 $string['createsessions'] = 'Create a new session';
 $string['createurl'] = 'Create a new session';
@@ -65,7 +67,9 @@ $string['viewpastsessions'] = 'View all past sessions';
 $string['viewurl'] = 'No Records exist';
 $string['practicedate'] = 'Practice Date';
 $string['typeofpractice'] = 'Type of Practice';
-$string['category'] = 'Topic Selected';
+$string['categoryselected'] = 'Topic Selected';
+$string['category'] = 'Category';
+$string['error:atleastonecategory'] = 'At least one category must be selected';
 $string['score'] = 'Marks Obtained';
 $string['timegoalset'] = 'Time/Goal Set';
 $string['timeelapsed'] = 'Time';
@@ -79,17 +83,6 @@ $string['categoryselect'] = 'Categories';
 $string['categoryselect_help'] = 'Select from question categories. The number shows the count of questions available';
 $string['systemcontext'] = 'System context';
 $string['systemcontext_text'] = 'Show Questions avilable site wide';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+$string['topcategory'] = 'Top category';
+$string['selectcategories'] = 'Select categories';
+$string['atleastonecategory'] = 'At least one category must be selected';

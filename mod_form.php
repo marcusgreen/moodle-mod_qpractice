@@ -14,7 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
 /**
  * Form for creating new instances and editing existing
  * @package    mod_qpractice
@@ -23,10 +22,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/course/moodleform_mod.php');
-require_once($CFG->libdir . '/questionlib.php');
-require_once(dirname(__FILE__) . '/locallib.php');
-
+require_once $CFG->dirroot . '/course/moodleform_mod.php';
+require_once $CFG->libdir . '/questionlib.php';
+require_once dirname(__FILE__) . '/locallib.php';
 
 /**
  * The main qpractice configuration form
@@ -46,6 +44,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('mod_qpractice/qpractice', 'init');
+
         global $CFG;
         $mform = $this->_form;
 
@@ -63,15 +64,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'qpracticename', 'qpractice');
 
-        // Adding the standard "intro" and "introformat" fields.
-        global $CFG;
-        if ($CFG->version < 2015041700.00) { // Moodle version < 2.9Beta
-            $this->add_intro_editor(); /* deprecated from 2.9beta. */
-        } else {
-            $this->standard_intro_elements();
-        }
 
-        $mform->addElement('header', 'qpracticefieldset', get_string('behaviourandcategories', 'qpractice'));
+        $this->standard_intro_elements();
+
+        $mform->addElement('header', 'qpracticefieldset', get_string('categories', 'qpractice'));
+        $mform->setExpanded('qpracticefieldset');
 
         if (!empty($this->current->preferredbehaviour)) {
             $currentbehaviour = $this->current->preferredbehaviour;
@@ -81,9 +78,21 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         $course = $this->get_course();
         $coursecontext = context_course::instance($course->id);
-        $categories = qpractice_get_question_categories($coursecontext);
+        $topcategory = null;
+        $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
 
-        $mform->addElement('select', 'topcategory', get_string('category'), $categories);
+        $mform->addElement('html', '<div class="categories">');
+
+
+        $el = $mform->createElement('html', $categories);
+        $this->add_checkbox_controller(1);
+
+        $mform->addGroup([$el], 'categories');
+
+
+        $mform->addElement('html', '</div>');
+
+        $mform->addElement('header', 'qpracticefieldset', get_string('behaviours', 'qpractice'));
 
         $behaviours = question_engine::get_behaviour_options($currentbehaviour);
 
@@ -124,6 +133,43 @@ class mod_qpractice_mod_form extends moodleform_mod {
             }
         }
     }
+    /**
+     * Load in existing data as form defaults.
+     *
+     * @param mixed $question object or array of default values
+     */
+    public function set_data($default_values) {
+        global $DB;
+
+        if (isset($default_values->topcategory)) {
+          $this->_form->setDefault('selectcategories', '0');
+        } else {
+            $this->_form->setDefault('selectcategories', '1');
+        }
+
+        $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $default_values->id]);
+        foreach ($categories as $c) {
+            $el = 'categories[' . $c->categoryid . ']';
+            $this->_form->setDefault($el, true);
+        }
+        parent::set_data($default_values);
+    }
+
+    /**
+     * Allows module to modify the data returned by form get_data().
+     * This method is also called in the bulk activity completion form.
+     *
+     * Only available on moodleform_mod.
+     *
+     * @param stdClass $data the form data to be modified.
+     */
+    public function data_postprocessing($data) {
+
+        // if ($data->displaytype['selectcategories'] == 'selectcat') {
+        //     $data->topcategory = null;
+        // }
+        // parent::data_postprocessing($data);
+    }
 
     /**
      * return errors if no behaviour was selected
@@ -134,9 +180,18 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
+        $categories = optional_param_array('categories', '', PARAM_INT );
+        if (!$categories) {
+            $errors['categories'] ='No categories selected';
+        }
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
         }
+        // if ($data['selectcategories'] == 1) {
+        //     if (empty($data['categories'])) {
+        //         $errors['displaytype'] = get_string('atleastonecategory', 'qpractice');
+        //     }
+        // }
         return $errors;
     }
 
