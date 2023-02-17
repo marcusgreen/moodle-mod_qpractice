@@ -32,7 +32,7 @@ require_once("$CFG->libdir/formslib.php");
  * Runs when the student makes an attempt
  *
  * @package    mod_qpractice
- * @copyright  2022 Marcus Green
+ * @copyright  2019 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_qpractice_startattempt_form extends moodleform {
@@ -48,17 +48,20 @@ class mod_qpractice_startattempt_form extends moodleform {
         /* Stops headers being collapsible */
         $mform->setDisableShortForms(true);
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
+        $mform->setType('eranchor', PARAM_TEXT);
         $categories = $this->_customdata['categories'];
         if (count($categories) > 1) {
-            $mform->addElement('select', 'categories', get_string('category'), $this->_customdata['categories']);
-            $mform->addHelpButton('categories', 'categoryselect', 'qpractice');
+            foreach ($categories as $category) {
+                $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
+            }
+            $mform->addGroup($cbx, 'categories',  get_string('category'));
         } else {
-            $mform->addElement('hidden', 'categories', array_key_first($categories));
-            $mform->setType('categories', PARAM_TEXT);
-            $mform->addElement('static', 'categoryshow', get_string('category'), reset($categories));
+            $category = reset($categories);
+            $mform->addElement('static', 'category', get_string('category'), $category->name);
+            $categoryelement[] = $mform->createElement('advcheckbox', $category->categoryid, null, null, ['hidden=true']);
 
+            $mform->addGroup($categoryelement, 'categories');
         }
-
         $mform->addElement('select', 'behaviour', get_string('behaviour', 'qpractice'), $this->_customdata['behaviours']);
 
         $this->add_action_buttons(true, get_string('startpractice', 'qpractice'));
@@ -67,6 +70,29 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'instanceid', $this->_customdata['instanceid']);
         $mform->setType('instanceid', PARAM_INT);
+    }
+
+    /**
+     * Check the question text is valid, specifically that
+     * it contains at lease one gap (text surrounded by delimiters
+     * as in [cat]
+     *
+     * @param array $fromform
+     * @param array $data
+     * @return boolean
+     */
+    public function validation($fromform, $data) {
+        $errors = [];
+        if (!isset($fromform['categories'])) {
+            $msg = get_string('error:atleastonecategory', 'qpractice');
+            \core\notification::add($msg, \core\notification::WARNING);
+            $errors['true'] = true;
+        }
+        if ($errors) {
+            return $errors;
+        } else {
+            return true;
+        }
     }
 
 }

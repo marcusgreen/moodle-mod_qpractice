@@ -43,6 +43,16 @@ if ($id) {
         print_error('coursemisconf');
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+
+    $sql = "SELECT qpcat.categoryid,qcat.name
+            FROM {qpractice_categories} qpcat
+            JOIN {question_categories} qcat
+            ON qpcat.categoryid = qcat.id
+            WHERE qpcat.qpracticeid = :qpracticeid";
+
+    $categories = $DB->get_records_sql($sql, ['qpracticeid' => $id]);
+
+    // $qpractice_categories = $DB->get_field('qpractice_categories', ['qpracticeid' => $cm->id]);
 }
 
 require_login($course, true, $cm);
@@ -50,8 +60,10 @@ global $PAGE;
 
 $context = context_module::instance($cm->id);
 $coursecontext = $context->get_course_context();
-$categories = qpractice_get_question_categories($coursecontext, $qpractice->topcategory);
+/** mavg */
+//$categorytree = qpractice_get_question_categories($coursecontext, null, null, $categories);
 
+// $categories = get_category_table($categories);
 $behaviours = get_options_behaviour($cm);
 
 $data = array();
@@ -65,7 +77,6 @@ if ($mform->is_cancelled()) {
     $returnurl = new moodle_url('/mod/qpractice/view.php', array('id' => $cm->id));
     redirect($returnurl);
 } else if ($fromform = $mform->get_data()) {
-
     $sessionid = qpractice_session_create($fromform, $context);
     $nexturl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $sessionid));
     redirect($nexturl);

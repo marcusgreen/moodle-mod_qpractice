@@ -48,7 +48,7 @@ $params = array(
     'objectid' => $cm->id,
     'context' => $context
 );
-$event = \mod_qpractice\event\qpractice_viewed::create($params);
+$event = mod_qpractice\event\qpractice_viewed::create($params);
 $event->trigger();
 
 $PAGE->set_url('/mod/qpractice/view.php', array('id' => $cm->id));
@@ -58,24 +58,26 @@ $PAGE->set_context($context);
 
 $canview = has_capability('mod/qpractice:view', $context);
 
+$createurl = new moodle_url('/mod/qpractice/startattempt.php', array('id' => $cm->id));
+$createtext = get_string('createurl', 'qpractice');
 $reporturl = new moodle_url('/mod/qpractice/report.php', array('id' => $cm->id));
 $reporttext = get_string('reporturl', 'qpractice');
 
 echo $OUTPUT->header();
 
-$data = [];
 if ($canview) {
-    $data['createurl'] = new moodle_url('/mod/qpractice/startattempt.php', array('id' => $cm->id));
+    echo html_writer::link($createurl, $createtext);
+    echo html_writer::empty_tag('br');
     if ($qpractice = $DB->get_records('qpractice_session', array('userid' => $USER->id,
         'qpracticeid' => $cm->instance), 'id desc', '*', '0', '1')) {
         $qpractice = array_values($qpractice);
-        $data['dataurl'] = html_writer::link($reporturl, $reporttext);
+        echo html_writer::link($reporturl, $reporttext);
+        echo html_writer::empty_tag('br');
         if ($qpractice[0]->status == 'inprogress') {
-            $data['continueurl'] = new moodle_url('/mod/qpractice/attempt.php', array('id' => $qpractice[0]->id));
+            $continueurl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $qpractice[0]->id));
             $continuetext = get_string('continueurl', 'qpractice');
+            echo html_writer::link($continueurl, $continuetext);
         }
-        echo $OUTPUT->render_from_template('qpractice/view', $data);
-
     }
 } else {
     print_error(get_string('nopermission', 'qpractice'));

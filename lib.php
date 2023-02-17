@@ -71,11 +71,30 @@ function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mfo
     $qpractice->behaviour = $comma;
 
     $qpractice->id = $DB->insert_record('qpractice', $qpractice);
+    xdebug_break();
+    $categories = optional_param_array('categories', '', PARAM_INT );
+    $qpractice->categories = $categories;
+
+    upsert_categories($qpractice);
 
     qpractice_after_add_or_update($qpractice);
 
     return $qpractice->id;
 }
+
+function upsert_categories(stdClass $qpractice) {
+    global $DB;
+    $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->coursemodule]);
+    $recordstoinsert = [];
+    foreach (array_keys($qpractice->categories) as $categoryid) {
+        $recordstoinsert[] = (object) [
+            'qpracticeid' => $qpractice->coursemodule,
+            'categoryid' => $categoryid
+        ];
+    }
+    $DB->insert_records('qpractice_categories', $recordstoinsert);
+}
+
 
 /**
  * Updates an instance of the qpractice in the database
@@ -90,13 +109,20 @@ function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mfo
  */
 function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
     global $DB;
+    $qpractice->categories = optional_param_array('categories', null, PARAM_INT);
 
     $qpractice->timemodified = time();
     $qpractice->id = $qpractice->instance;
     $behaviour = $qpractice->behaviour;
     $comma = implode(",", array_keys($behaviour));
     $qpractice->behaviour = $comma;
-
+    upsert_categories($qpractice);
+    if (count($qpractice->categories) > 1) {
+        $qpractice->topcategory = null;
+    } else {
+        $category = array_flip($qpractice->categories);
+        $qpractice->topcategory = array_pop($category);
+    }
     return $DB->update_record('qpractice', $qpractice);
 }
 
