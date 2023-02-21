@@ -86,3 +86,8 @@ $string['systemcontext_text'] = 'Show Questions avilable site wide';
 $string['topcategory'] = 'Top category';
 $string['selectcategories'] = 'Select categories';
 $string['atleastonecategory'] = 'At least one category must be selected';
+
+
+$string['marksobtained'] = 'Marks obtained';
+$string['qpractice_sessions'] = 'Qpractice sessions';
+

@@ -40,26 +40,34 @@ if ($id) {
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
-$PAGE->set_title($qpractice->name);
-$PAGE->set_heading($course->fullname);
-$PAGE->set_context($context);
-$PAGE->set_url('/mod/qpractice/report.php', array('id' => $cm->id));
-$output = $PAGE->get_renderer('mod_qpractice');
+require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
+require_once(dirname(__FILE__).'/lib.php');
 
-$params = array(
+$courseid = required_param('id', PARAM_INT);   // Course.
+
+$context = context_system::instance();
+$PAGE->set_url(new moodle_url('/mod/qpractice/report.php'));
+$params = [
     'objectid' => $cm->id,
     'context' => $context
-);
+];
 $event = \mod_qpractice\event\qpractice_report_viewed::create($params);
 $event->trigger();
 
-
 $backurl = new moodle_url('/mod/qpractice/view.php', array('id' => $cm->id));
 $backtext = get_string('backurl', 'qpractice');
+$PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
 
-echo $output->report_table($cm, $context);
+$report = \core_reportbuilder\system_report_factory::create(
+    \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
+    $context
+);
+$PAGE->set_pagelayout('admin');
+
+echo $report->output();
+
 echo html_writer::empty_tag('br');
 echo html_writer::link($backurl, $backtext);
 
