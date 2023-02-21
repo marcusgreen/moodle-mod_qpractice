@@ -66,21 +66,28 @@ $reporttext = get_string('reporturl', 'qpractice');
 echo $OUTPUT->header();
 
 if ($canview) {
-    echo html_writer::link($createurl, $createtext);
-    echo html_writer::empty_tag('br');
+    echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
+    echo $OUTPUT->single_button($createurl, $createtext, 'get', ['class' => 'btn text-left col-sm-3 ']);
+    echo html_writer::end_tag('div');
+
     if ($qpractice = $DB->get_records('qpractice_session', array('userid' => $USER->id,
         'qpracticeid' => $cm->instance), 'id desc', '*', '0', '1')) {
         $qpractice = array_values($qpractice);
-        echo html_writer::link($reporturl, $reporttext);
-        echo html_writer::empty_tag('br');
+
+        echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
+        echo $OUTPUT->single_button($reporturl, $reporttext, 'get', ['class' => 'btn  text-left col-sm-3']);
+        echo html_writer::end_tag('div');
+
         if ($qpractice[0]->status == 'inprogress') {
             $continueurl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $qpractice[0]->id));
             $continuetext = get_string('continueurl', 'qpractice');
             echo html_writer::link($continueurl, $continuetext);
         }
     }
+    echo html_writer::end_tag('div');
+
 } else {
-    print_error(get_string('nopermission', 'qpractice'));
+    throw new moodle_exception(get_string('nopermission', 'qpractice'));
 }
 
 // Finish the page.
