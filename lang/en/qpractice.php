@@ -87,7 +87,7 @@ $string['topcategory'] = 'Top category';
 $string['selectcategories'] = 'Select categories';
 $string['atleastonecategory'] = 'At least one category must be selected';
 
-
 $string['marksobtained'] = 'Marks obtained';
 $string['qpractice_sessions'] = 'Qpractice sessions';
-
+$string['totalnoofquestions'] = 'No of questions viewed';
+$string['totalnoofquestionsright'] = 'No of questions right';

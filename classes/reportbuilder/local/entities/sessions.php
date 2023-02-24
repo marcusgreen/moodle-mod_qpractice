@@ -93,6 +93,28 @@ class sessions extends base {
         $column->set_is_sortable(true);
 
         $columns[] = $column;
+
+
+        $column = (new column(
+            'totalnoofquestions',
+            new lang_string('totalnoofquestions', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field('totalnoofquestions');
+        $column->set_is_sortable(true);
+
+        $columns[] = $column;
+
+        $column = (new column(
+            'totalnoofquestionsright',
+            new lang_string('totalnoofquestionsright', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field('totalnoofquestionsright');
+        $column->set_is_sortable(true);
+
+        $columns[] = $column;
+
         return $columns;
     }
     /**
@@ -103,15 +125,15 @@ class sessions extends base {
      */
     public function get_all_filters() : array {
         return [];
-        // $tablealias = $this->get_table_alias('demonames');
-        // $filters[] = (new filter(
-        //     text::class,
-        //     'demo_firstname',
-        //     new lang_string('demo_firstname', 'local_reportdemo'),
-        //     $this->get_entity_name(),
-        //     "{$tablealias}.demo_firstname"
-        // ))->add_joins($this->get_joins());
-        // return $filters;
+        $tablealias = $this->get_table_alias('sessions');
+        $filters[] = (new filter(
+            text::class,
+            'marksobtained',
+            new lang_string('marksobtained', 'mod_qpractice'),
+            $this->get_entity_name(),
+            "{$tablealias}.marksobtained"
+        ))->add_joins($this->get_joins());
+        return $filters;
     }
 
 }

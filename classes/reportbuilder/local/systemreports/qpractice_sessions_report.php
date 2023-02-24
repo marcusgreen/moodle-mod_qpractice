@@ -22,7 +22,7 @@ use mod_qpractice\reportbuilder\local\entities\sessions;
 
 /**
  *
- * @package    local_reportdemo
+ * @package    mod_qpractice
  * @copyright  2023 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -35,8 +35,8 @@ class qpractice_sessions_report extends system_report {
         $alias = $sessions->get_table_alias('sessions');
         $this->add_entity($sessions);
         $this->set_main_table('qpractice_session', $alias);
-        //$this->add_filters_from_entities(['demonames:demo_firstname']);
         $this->add_columns();
+        $this->set_downloadable(true, get_string('pluginname', 'mod_qpractice'));
     }
 
     /**
@@ -57,7 +57,9 @@ class qpractice_sessions_report extends system_report {
     protected function add_columns(): void {
         $columns = [
             'sessions:practicedate',
-            'sessions:marksobtained'
+            'sessions:marksobtained',
+            'sessions:totalnoofquestions',
+            'sessions:totalnoofquestionsright'
         ];
         $this->add_columns_from_entities($columns);
     }

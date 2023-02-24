@@ -30,10 +30,10 @@ $n = optional_param('n', 0, PARAM_INT);  // Qpractice instance ID - it should be
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
     }
     if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf', 'error', '', $cm->course);
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
 }

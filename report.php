@@ -64,7 +64,6 @@ $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
     $context
 );
-$PAGE->set_pagelayout('admin');
 
 echo $report->output();
 
