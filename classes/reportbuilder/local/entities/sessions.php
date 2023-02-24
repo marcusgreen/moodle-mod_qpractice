@@ -16,24 +16,16 @@
 
 namespace mod_qpractice\reportbuilder\local\entities;
 
-use core_reportbuilder\local\entities\base;
 use lang_string;
+use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
-use core_reportbuilder\local\filters\text;
-////
-
-
-use context_helper;
-use html_writer;
-use stdClass;
-
-////
+use core_reportbuilder\local\filters\number;
 
 /**
  * Reportbuilder entity sessions.
  *
- * @package     local_sessions
+ * @package     mod_qpractice
  * @copyright   2023 Marcus Green
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -85,15 +77,25 @@ class sessions extends base {
         $columns[] = $column;
 
         $column = (new column(
-            'marksobtained',
-            new lang_string('marksobtained', 'mod_qpractice'),
+            'totalmarks',
+            new lang_string('totalmarks', 'mod_qpractice'),
             $this->get_entity_name()
         ));
-        $column->add_field('marksobtained');
+        $column->add_field('totalmarks');
         $column->set_is_sortable(true);
 
         $columns[] = $column;
 
+        $column = (new column(
+            'marksobtained',
+            new lang_string('marksobtained', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        // $tm = $this->get_column('totalmarks');
+        $column->add_field('marksobtained');
+        $column->set_is_sortable(true);
+
+        $columns[] = $column;
 
         $column = (new column(
             'totalnoofquestions',
@@ -124,10 +126,10 @@ class sessions extends base {
      * @return array
      */
     public function get_all_filters() : array {
-        return [];
+        // return [];
         $tablealias = $this->get_table_alias('sessions');
         $filters[] = (new filter(
-            text::class,
+            number::class,
             'marksobtained',
             new lang_string('marksobtained', 'mod_qpractice'),
             $this->get_entity_name(),
@@ -135,5 +137,4 @@ class sessions extends base {
         ))->add_joins($this->get_joins());
         return $filters;
     }
-
 }

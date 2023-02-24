@@ -36,6 +36,7 @@ class qpractice_sessions_report extends system_report {
         $this->add_entity($sessions);
         $this->set_main_table('qpractice_session', $alias);
         $this->add_columns();
+        $this->add_filters_from_entities(['sessions:marksobtained']);
         $this->set_downloadable(true, get_string('pluginname', 'mod_qpractice'));
     }
 
@@ -59,7 +60,9 @@ class qpractice_sessions_report extends system_report {
             'sessions:practicedate',
             'sessions:marksobtained',
             'sessions:totalnoofquestions',
-            'sessions:totalnoofquestionsright'
+            'sessions:totalnoofquestionsright',
+            'sessions:totalmarks'
+
         ];
         $this->add_columns_from_entities($columns);
     }
