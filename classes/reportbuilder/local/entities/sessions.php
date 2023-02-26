@@ -91,9 +91,14 @@ class sessions extends base {
             new lang_string('marksobtained', 'mod_qpractice'),
             $this->get_entity_name()
         ));
-        // $tm = $this->get_column('totalmarks');
         $column->add_field('marksobtained');
+        $column->add_field('totalmarks');
         $column->set_is_sortable(true);
+        $column->add_callback(
+            static function (string $marksobtained, \stdClass $r) :string {
+                return $marksobtained .'/'. $r->totalmarks;
+            }
+        );
 
         $columns[] = $column;
 

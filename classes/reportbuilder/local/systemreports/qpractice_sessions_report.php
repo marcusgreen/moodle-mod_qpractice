@@ -60,9 +60,7 @@ class qpractice_sessions_report extends system_report {
             'sessions:practicedate',
             'sessions:marksobtained',
             'sessions:totalnoofquestions',
-            'sessions:totalnoofquestionsright',
-            'sessions:totalmarks'
-
+            'sessions:totalnoofquestionsright'
         ];
         $this->add_columns_from_entities($columns);
     }
