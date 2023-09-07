@@ -44,10 +44,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
-        global $PAGE;
+        global $PAGE, $CFG, $COURSE;
         $PAGE->requires->js_call_amd('mod_qpractice/qpractice', 'init');
 
-        global $CFG;
         $mform = $this->_form;
 
         // Adding the "general" fieldset, where all the common settings are showed.
@@ -77,7 +76,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         }
 
         $course = $this->get_course();
-        $coursecontext = context_course::instance($course->id);
+        $coursecontext = context_course::instance($COURSE->id);
         $topcategory = null;
         $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
 

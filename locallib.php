@@ -62,7 +62,7 @@ function qpractice_make_default_categories($context) {
 function qpractice_get_question_categories(\context $context, $mform, int $top=null, array $categories=null) : string {
     global $DB;
     if (empty($context)) {
-        return [];
+        return '';
     }
     $options = [];
     /* Get all categories in course/system context (for settings form) */
@@ -75,7 +75,6 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     $contextcategories = qbank_managecategories\helper::get_categories_for_contexts($context->id,'parent',false);
 
    // $contextcategories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
-    xdebug_break();
     $instancecategories = $DB->get_records_menu('qpractice_categories', ['qpracticeid' => $instanceid], '', 'id, categoryid');
     foreach ($contextcategories as $category) {
         if (in_array($category->id, $instancecategories)) {
