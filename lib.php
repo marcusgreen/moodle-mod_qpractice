@@ -44,6 +44,8 @@ function qpractice_supports($feature) {
             return true;
         case FEATURE_USES_QUESTIONS:
             return true;
+        case FEATURE_MOD_PURPOSE:
+            return MOD_PURPOSE_ASSESSMENT;
         default:
             return null;
     }
