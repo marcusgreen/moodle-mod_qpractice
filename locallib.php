@@ -68,11 +68,13 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     /* Get all categories in course/system context (for settings form) */
     if (get_config('qpractice', 'systemcontext')) {
         $questioncats = question_category_options([context_system::instance()]);
+        // $catmenu = custom_category_condition_helper::question_category_options($this->contexts, true, 0,
+        // true, -1, false);
     }
 
     $instanceid = optional_param('update', null, PARAM_INT);
 
-    $contextcategories = qbank_managecategories\helper::get_categories_for_contexts($context->id,'parent',false);
+    $contextcategories = qbank_managecategories\helper::get_categories_for_contexts($context->id, 'parent', false);
 
    // $contextcategories = get_categories_for_contexts($context->id, 'parent, sortorder, name ASC', $top);
     $instancecategories = $DB->get_records_menu('qpractice_categories', ['qpracticeid' => $instanceid], '', 'id, categoryid');
@@ -84,8 +86,19 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
         }
     }
 
+
+    $catarray = [];
+    foreach ($contextcategories as $category) {
+        $catarray[$category->id] = $category->id;
+    }
+    $top = min($catarray);
+
     $ct = new catTree();
-    $ct->buildtree($mform, $contextcategories, 1);
+
+    $ct->buildtree($mform, $contextcategories, $top -1);
+    // $ct->buildtree($mform, $contextcategories, 16);
+
+
     $ct->html = '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
     '.$ct->html;
     $ct->html .= '</div>';

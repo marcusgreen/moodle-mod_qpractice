@@ -21,6 +21,7 @@
  * @copyright  2013 Jayesh Anandani
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+global $CFG, $USER;
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once("$CFG->libdir/formslib.php");
@@ -68,7 +69,6 @@ echo $OUTPUT->header();
 if ($canview) {
     echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
     echo $OUTPUT->single_button($createurl, $createtext, 'get', ['class' => 'btn text-left col-sm-3 ']);
-    echo html_writer::end_tag('div');
 
     if ($qpractice = $DB->get_records('qpractice_session', array('userid' => $USER->id,
         'qpracticeid' => $cm->instance), 'id desc', '*', '0', '1')) {
