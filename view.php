@@ -74,9 +74,9 @@ if ($canview) {
         'qpracticeid' => $cm->instance), 'id desc', '*', '0', '1')) {
         $qpractice = array_values($qpractice);
 
-        echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
-        echo $OUTPUT->single_button($reporturl, $reporttext, 'get', ['class' => 'btn  text-left col-sm-3']);
-        echo html_writer::end_tag('div');
+        // echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
+        echo $OUTPUT->single_button($reporturl, $reporttext, 'get', ['class' => 'btn  text-left col-sm-4']);
+        // echo html_writer::end_tag('div');
 
         if ($qpractice[0]->status == 'inprogress') {
             $continueurl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $qpractice[0]->id));
