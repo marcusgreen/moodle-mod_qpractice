@@ -24,8 +24,22 @@
 define(['jquery'], function($) {
     return {
         init: function() {
-          debugger;
-            $('#id_selectcategories_1').on('click', function() {
+        document.querySelectorAll("input[type='checkbox'].question_category").forEach(
+                input => input.addEventListener('click', function(event) {
+                    var checkboxid = event.target.id.split('_')[2];
+                    if(event.target.checked == true) {
+                    selectChildren(checkboxid, true);
+                    } else{
+                        selectChildren(checkboxid, false);
+
+                    }
+
+                   // var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
+                    //checkboxes.forEach(selectChildren);
+                })
+            );
+
+            $('#id_selec+tcategories_1').on('click', function() {
                     $("#id_topcategory").prop('disabled', true);
                     $('[id^="id_categories_"]').prop('disabled', false);
 
@@ -36,4 +50,16 @@ define(['jquery'], function($) {
             });
         }
     };
+    function selectChildren(checkboxid, isChecked){
+        // var parent = document.getElementById(parentid);
+        var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
+        checkboxes.forEach(function(checkbox) {
+            var thisparentid = checkbox.id.split('_')[4];
+            if(thisparentid == checkboxid){
+                checkbox.checked= isChecked;
+            }
+
+        });
+    }
+
 });

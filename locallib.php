@@ -91,7 +91,10 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     foreach ($contextcategories as $category) {
         $catarray[$category->id] = $category->id;
     }
-    $top = min($catarray);
+    $top = 0;
+    if (count($catarray) > 0 ) {
+        $top = min($catarray);
+    }
 
     $ct = new catTree();
 
@@ -116,9 +119,9 @@ class catTree {
                 $this->html .= "<li>\n";
                 $this->html .= $element->name;
                 $questioncount = '&nbsp;('.$element->questioncount.')';
-                $id = 'categories['.$element->id.']';
+                $id = 'categories['.$element->id.']_parent['.$element->parent.']';
                 $checked = ($element->checked) ? "checked" : "";
-                $this->html .= '&nbsp;'.$mform->createElement('checkbox', $id, '', '', [$checked, 'group' => 1])->toHtml().$questioncount;
+                $this->html .= '&nbsp;'.$mform->createElement('checkbox', $id, '', '', ['class' => 'question_category', $checked, 'group' => 1])->toHtml().$questioncount;
 
                 $children = $this->buildTree($mform, $elements, $element->id);
                 if ($children) {

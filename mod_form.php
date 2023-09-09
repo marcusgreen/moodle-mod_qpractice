@@ -179,9 +179,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
+        xdebug_break();
+
         $categories = optional_param_array('categories', '', PARAM_INT );
         if (!$categories) {
-            $errors['categories'] ='No categories selected';
+            $errors['categories'] = 'No categories selected';
         }
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
