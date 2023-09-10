@@ -25,19 +25,21 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/renderer.php');
 require_once("$CFG->libdir/formslib.php");
 
-$id = required_param('id', PARAM_INT); // Course-Module id.
+$cmid = required_param('id', PARAM_INT); // Course-Module id.
 
-if ($id) {
-    if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
-        print_error('invalidcoursemodule');
+if ($cmid) {
+    if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
+        throw new moodle_exception('invalidcoursemoduleid', 'error', '', $cmid);
+
     }
     if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
-        print_error('coursemisconf');
+        throw new \moodle_exception('coursemisconf');
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
 }
 
 require_login($course, true, $cm);
+
 $context = context_module::instance($cm->id);
 
 require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
@@ -45,7 +47,7 @@ require_once(dirname(__FILE__).'/lib.php');
 
 $courseid = required_param('id', PARAM_INT);   // Course.
 
-$context = context_system::instance();
+$context = context_module::instance($cm->id);
 $PAGE->set_url(new moodle_url('/mod/qpractice/report.php'));
 $params = [
     'objectid' => $cm->id,
