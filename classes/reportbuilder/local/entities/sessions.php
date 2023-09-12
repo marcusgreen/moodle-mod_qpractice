@@ -21,6 +21,7 @@ use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use core_reportbuilder\local\filters\number;
+use core_reportbuilder\local\filters\
 
 /**
  * Reportbuilder entity sessions.
@@ -139,6 +140,14 @@ class sessions extends base {
             new lang_string('marksobtained', 'mod_qpractice'),
             $this->get_entity_name(),
             "{$tablealias}.marksobtained"
+        ))->add_joins($this->get_joins());
+
+        $filters[] = (new filter(
+            date::class,
+            'practicedate',
+            new lang_string('practicedate', 'mod_qpractice'),
+            $this->get_entity_name(),
+            "{$tablealias}.practicedate"
         ))->add_joins($this->get_joins());
         return $filters;
     }
