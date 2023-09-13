@@ -37,10 +37,10 @@ $DB->set_field('qpractice_session', 'status', 'finished', null);
 
 if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
-        print_error('invalidcoursemodule');
+        throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
     }
     if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
-        print_error('coursemisconf');
+        throw new moodle_exception('coursemisconf', 'error', '', $$cm->course);
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
 
@@ -52,7 +52,6 @@ if ($id) {
 
     $categories = $DB->get_records_sql($sql, ['qpracticeid' => $id]);
 
-    // $qpractice_categories = $DB->get_field('qpractice_categories', ['qpracticeid' => $cm->id]);
 }
 
 require_login($course, true, $cm);

@@ -22,9 +22,9 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-require_once $CFG->dirroot . '/course/moodleform_mod.php';
-require_once $CFG->libdir . '/questionlib.php';
-require_once dirname(__FILE__) . '/locallib.php';
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
+require_once($CFG->libdir . '/questionlib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
 
 /**
  * The main qpractice configuration form
@@ -154,21 +154,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
         parent::set_data($default_values);
     }
 
-    /**
-     * Allows module to modify the data returned by form get_data().
-     * This method is also called in the bulk activity completion form.
-     *
-     * Only available on moodleform_mod.
-     *
-     * @param stdClass $data the form data to be modified.
-     */
-    public function data_postprocessing($data) {
-
-        // if ($data->displaytype['selectcategories'] == 'selectcat') {
-        //     $data->topcategory = null;
-        // }
-        // parent::data_postprocessing($data);
-    }
 
     /**
      * return errors if no behaviour was selected
@@ -179,7 +164,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
-        xdebug_break();
 
         $categories = optional_param_array('categories', '', PARAM_INT );
         if (!$categories) {
@@ -188,11 +172,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
         }
-        // if ($data['selectcategories'] == 1) {
-        //     if (empty($data['categories'])) {
-        //         $errors['displaytype'] = get_string('atleastonecategory', 'qpractice');
-        //     }
-        // }
+
         return $errors;
     }
 

@@ -21,7 +21,7 @@ use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use core_reportbuilder\local\filters\number;
-use core_reportbuilder\local\filters\
+use core_reportbuilder\local\filters\date;
 
 /**
  * Reportbuilder entity sessions.
@@ -132,7 +132,6 @@ class sessions extends base {
      * @return array
      */
     public function get_all_filters() : array {
-        // return [];
         $tablealias = $this->get_table_alias('sessions');
         $filters[] = (new filter(
             number::class,

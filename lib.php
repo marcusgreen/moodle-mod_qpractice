@@ -73,7 +73,6 @@ function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mfo
     $qpractice->behaviour = $comma;
 
     $qpractice->id = $DB->insert_record('qpractice', $qpractice);
-    xdebug_break();
     $categories = optional_param_array('categories', '', PARAM_INT );
     $qpractice->categories = $categories;
 
