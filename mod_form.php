@@ -80,7 +80,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $topcategory = null;
         $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
 
-        $mform->addElement('html', '<div class="categories">');
+        $mform->addElement('html', '<div class="qpractice categories">');
 
 
         $el = $mform->createElement('html', $categories);

@@ -7,3 +7,10 @@
 .qpractice .qpbtn:hover{
     box-shadow: 0 0 5px #7bc1f7;
 }
+
+.qpractice .question_count{
+    padding-left:0.25em;
+}
+.qpractice .category_name{
+    padding-right:0.25em;
+}
