@@ -14,3 +14,4 @@
 .qpractice .category_name{
     padding-right:0.25em;
 }
+.qpractice label {padding-right:0.24em; display: inline; float: left; } label:after { content: "" }

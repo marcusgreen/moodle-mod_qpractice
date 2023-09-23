@@ -109,25 +109,25 @@ class catTree {
 
     public function buildtree($mform, $elements, $parentid = 0) {
         $branch = array();
-        $this->html .= "<ul>\n";
+        $this->html .= "<ul>";
         foreach ($elements as $element) {
             if ($element->parent === (string) $parentid) {
-                $this->html .= "<li>";
-                $this->html .= '<span class="category_name">'.$element->name.'</span>';
+                $this->html .= '<li class="category_list_item">';
+                // $this->html .= '<span class="category_name">'.$element->name.'</span>';
                 $questioncount = '<span class="question_count">('.$element->questioncount.')</span>';
                 $id = 'categories['.$element->id.']_parent['.$element->parent.']';
                 $checked = ($element->checked) ? "checked" : "";
-                $this->html .= $mform->createElement('checkbox', $id, '', '', ['class' => 'question_category', $checked, 'group' => 1])->toHtml().$questioncount;
+                $this->html .= $mform->createElement('checkbox', $id, '', $element->name, ['class' => 'question_category', $checked, 'group' => 1])->toHtml().$questioncount;
                 $children = $this->buildTree($mform, $elements, $element->id);
                 if ($children) {
                     $element->children = $children;
                 }
-                $this->html .= "</li>\n";
+                $this->html .= "</li>";
                 $element->name;
                 $branch[] = $element;
             }
         }
-        $this->html .= "</ul>\n";
+        $this->html .= "</ul>";
         return $branch;
     }
 
