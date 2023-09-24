@@ -18,12 +18,18 @@
  *
  * @package    qtype
  * @subpackage gapfill
- * @copyright  2017 Marcus Green
+ * @copyright  2023 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define(['jquery'], function($) {
     return {
         init: function() {
+        document.getElementById('id_select_all_none').addEventListener('click', e => {
+                var checkboxes = document.querySelectorAll("input[type='checkbox'].question_category");
+                checkboxes.forEach(checkbox =>{
+                    checkbox.checked = !checkbox.checked;
+                });
+        });
         document.querySelectorAll("input[type='checkbox'].question_category").forEach(
                 input => input.addEventListener('click', function(event) {
                     var checkboxid = event.target.id.split('_')[2];
@@ -33,21 +39,9 @@ define(['jquery'], function($) {
                         selectChildren(checkboxid, false);
 
                     }
-
-                   // var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
-                    //checkboxes.forEach(selectChildren);
                 })
             );
 
-            $('#id_selec+tcategories_1').on('click', function() {
-                    $("#id_topcategory").prop('disabled', true);
-                    $('[id^="id_categories_"]').prop('disabled', false);
-
-            });
-            $('#id_selectcategories_0').on('click', function() {
-                $("#id_topcategory").prop('disabled', false);
-                $('[id^="id_categories_"]').prop('disabled', true);
-            });
         }
     };
     function selectChildren(checkboxid, isChecked){

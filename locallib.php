@@ -67,11 +67,9 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     $options = [];
     /* Get all categories in course/system context (for settings form) */
     if (get_config('qpractice', 'systemcontext')) {
-        $questioncats = question_category_options([context_system::instance()]);
-        // $catmenu = custom_category_condition_helper::question_category_options($this->contexts, true, 0,
-        // true, -1, false);
+        $questioncats = \qbank_managecategories([context_system::instance()]);
+        //$questioncats = question_category_options([context_system::instance()]);
     }
-
     $instanceid = optional_param('update', null, PARAM_INT);
 
     $contextcategories = qbank_managecategories\helper::get_categories_for_contexts($context->id, 'parent', false);
@@ -96,7 +94,7 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
 
     $ct = new catTree();
 
-    $ct->buildtree($mform, $contextcategories, $top -1);
+    $ct->buildtree($mform, $contextcategories, $top - 1);
 
     $ct->html = '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
     '.$ct->html;
@@ -106,14 +104,20 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
 
 class catTree {
     public $html;
-
-    public function buildtree($mform, $elements, $parentid = 0) {
-        $branch = array();
+    /**
+     * Build tree of categories with checkboxes to select the ones to
+     * appear for a student to select from.
+     *
+     * @param [type] $mform
+     * @param [type] $elements
+     * @param integer $parentid
+     * @return void
+     */
+    public function buildtree(\MoodleQuickForm $mform, array $elements, int  $parentid = 0) {
         $this->html .= "<ul>";
         foreach ($elements as $element) {
             if ($element->parent === (string) $parentid) {
                 $this->html .= '<li class="category_list_item">';
-                // $this->html .= '<span class="category_name">'.$element->name.'</span>';
                 $questioncount = '<span class="question_count">('.$element->questioncount.')</span>';
                 $id = 'categories['.$element->id.']_parent['.$element->parent.']';
                 $checked = ($element->checked) ? "checked" : "";
@@ -128,7 +132,6 @@ class catTree {
             }
         }
         $this->html .= "</ul>";
-        return $branch;
     }
 
 }

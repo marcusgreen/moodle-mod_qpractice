@@ -75,7 +75,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
             $currentbehaviour = '';
         }
 
-        $course = $this->get_course();
+        // $course = $this->get_course();
         $coursecontext = context_course::instance($COURSE->id);
         $topcategory = null;
         $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
@@ -84,7 +84,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
 
         $el = $mform->createElement('html', $categories);
-        $this->add_checkbox_controller(1);
+
+        //$this->add_checkbox_controller(0, '', ['class' => 'selectall']);
+        $mform->addElement('button', 'select_all_none', 'Select All/None');
 
         $mform->addGroup([$el], 'categories');
 
