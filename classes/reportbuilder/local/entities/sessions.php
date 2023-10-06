@@ -68,10 +68,12 @@ class sessions extends base {
             $this->get_entity_name()
         ));
         $column->add_field('practicedate');
+        $column->add_field('id');
         $column->set_is_sortable(true);
         $column->add_callback(
-            static function (string $practicedate) :string {
-                return userdate($practicedate);
+            static function (string $practicedate,  \stdClass $sessionfields) :string {
+                $practiceuserdate = userdate($practicedate);
+                return "<a  title='Click for breakdown' href=report_by_category.php?id=$sessionfields->id > $practiceuserdate </a>";
             }
         );
 
@@ -85,6 +87,14 @@ class sessions extends base {
         $column->add_field('totalmarks');
         $column->set_is_sortable(true);
 
+        $columns[] = $column;
+
+        $column = (new column(
+            'id',
+            new lang_string('sessionid', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field('id');
         $columns[] = $column;
 
         $column = (new column(

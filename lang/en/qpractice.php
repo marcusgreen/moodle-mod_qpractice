@@ -46,6 +46,7 @@ $string['pluginadministration'] = 'Question Practice administration';
 $string['pluginname'] = 'Question Practice';
 $string['practicesession'] = 'Practice Session';
 $string['qpractice'] = 'Qpractice';
+$string['sessionid'] = 'sessionid';
 $string['qpractice:addinstance'] = 'Add a Question Practice instance';
 $string['qpractice:attempt'] = 'Attempt a Question Practice session';
 $string['qpractice:view'] = 'View a Question Practice session';
