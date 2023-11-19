@@ -59,6 +59,7 @@ $string['qpracticefieldset'] = 'Custom example fieldset';
 $string['qpracticename'] = 'Question Practice name';
 $string['qpracticename_help'] = 'This is the name that will show on the course';
 $string['qpracticeset'] = 'Select any one type of Practice';
+$string['qpractice_categories'] = 'Qpractice categories';
 $string['reporturl'] = 'Show Past Sessions';
 $string['stoppractice'] = 'Stop practice';
 $string['submitandfinish'] = 'Submit and Finish Practice';

@@ -48,6 +48,7 @@ require_once(dirname(__FILE__).'/lib.php');
 $courseid = required_param('id', PARAM_INT);   // Course.
 
 $context = context_module::instance($cm->id);
+$PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/mod/qpractice/report.php'));
 $params = [
     'objectid' => $cm->id,
@@ -61,7 +62,7 @@ $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
-
+xdebug_break();
 $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
     $context

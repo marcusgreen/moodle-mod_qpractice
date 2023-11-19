@@ -61,6 +61,7 @@ class sessions extends base {
      * @return column[]
      */
     protected function get_all_columns(): array {
+        $cmid = optional_param('id', '', PARAM_INT);
         $columns = [];
         $column = (new column(
             'practicedate',
@@ -71,9 +72,9 @@ class sessions extends base {
         $column->add_field('id');
         $column->set_is_sortable(true);
         $column->add_callback(
-            static function (string $practicedate,  \stdClass $sessionfields) :string {
+            static function (string $practicedate,  \stdClass $sessionfields, $cmid) :string {
                 $practiceuserdate = userdate($practicedate);
-                return "<a  title='Click for breakdown' href=report_by_category.php?id=$sessionfields->id > $practiceuserdate </a>";
+                return "<a  title='Click for breakdown' href=report_by_category.php?sessionid=$sessionfields->id>$practiceuserdate </a>";
             }
         );
 
