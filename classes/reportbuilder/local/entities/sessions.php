@@ -32,7 +32,7 @@ use core_reportbuilder\local\filters\date;
  */
 class sessions extends base {
 
-    protected function get_default_table_aliases(): array {
+    protected function get_default_tables(): array {
         return ['sessions' => 'sessions'];
     }
 
