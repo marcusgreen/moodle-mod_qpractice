@@ -25,6 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['qpractice_session_categories'] = 'Qpractice session categories';
 $string['resumepractice'] = 'Resume Practice';
 $string['backurl'] = 'Go back to main page';
 $string['behaviours'] = 'Behaviours';

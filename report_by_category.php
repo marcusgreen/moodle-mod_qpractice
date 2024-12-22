@@ -27,32 +27,112 @@ require_once("$CFG->libdir/formslib.php");
 
 $sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
 
-xdebug_break();
 
-$sql = 'SELECT qc.id, qcats.name AS category_name, cs.marksobtained,cs.totalmarks
-        FROM {qpractice_session} cs
-        JOIN {qpractice_session_cats} qsc ON cs.id = qsc.session
-        JOIN {qpractice_categories} qc ON qsc.category = qc.id
-        JOIN {question_categories} qcats ON qc.categoryid = qcats.id
-        WHERE cs.id = :sessionid';
+// $sql = 'SELECT qc.id, qcats.name AS category_name, cs.marksobtained,cs.totalmarks
+//         FROM {qpractice_session} cs
+//         JOIN {qpractice_session_cats} qsc ON cs.id = qsc.session
+//         JOIN {qpractice_categories} qc ON qsc.category = qc.id
+//         JOIN {question_categories} qcats ON qc.categoryid = qcats.id
+//         WHERE cs.id = :sessionid';
+
+// select  qcats.id, qcats.name as categroy_name,session.marksobtained, session.totalmarks
+// from mdl_qpractice qp join mdl_qpractice_session session on session.qpracticeid = qp.id
+// join mdl_qpractice_session_cats sessioncats on session.id = sessioncats.session
+// select  qcats.id, qcats.name as category_name, session.marksobtained, session.totalmarks
+// from mdl_qpractice qp join mdl_qpractice_session session on session.qpracticeid = qp.id
+// join mdl_qpractice_session_cats sessioncats on session.id = sessioncats.session
+// join mdl_question_categories qcats on sessioncats.category = qcats.id where session.id = 1\G;
+// join mdl_question_categories qcats on sessioncats.session = session.id where session.id = 1;
+
+$sql = "SELECT qcats.id, qcats.name as category_name, session.marksobtained, session.totalmarks
+        FROM {qpractice} qp
+        JOIN {qpractice_session} session ON session.qpracticeid = qp.id
+        JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
+        JOIN {question_categories} qcats ON sessioncats.category = qcats.id
+        WHERE session.id = :sessionid";
+
 $categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
 
+
+$cmid = required_param('cmid', PARAM_INT); // Course-Module id.
+
+if ($cmid) {
+    if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
+        throw new moodle_exception('invalidcoursemoduleid', 'error', '', $cmid);
+
+    }
+    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+        throw new \moodle_exception('coursemisconf');
+    }
+    $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+}
+
+require_login($course, true, $cm);
+
+$context = context_module::instance($cm->id);
+xdebug_break();
+$report = \core_reportbuilder\system_report_factory::create(
+    \mod_qpractice\reportbuilder\local\systemreports\qpractice_session_categories_report::class,
+    $context
+);
 
 $backurl = new moodle_url('/mod/qpractice/view.php', array('id' => $sessionid));
 $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
-echo '<table>';
+//echo $report->output();
+xdebug_break();
+$t = new html_table();
+$t->head = array(get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice'));
+$t->data = $categories;
+//echo html_writer::table($t);
+$columns =[
+    'category_name' => get_string('category', 'qpractice'),
+    'marksobtained' => get_string('marksobtained', 'qpractice'),
+    'totalmarks' => get_string('totalmarks', 'qpractice'),
+];
+$headers =[
+    get_string('category', 'qpractice'),
+    get_string('marksobtained', 'qpractice'),
+    get_string('totalmarks', 'qpractice'),
+];
+
+
+
+$table = new flexible_table('questioncategories');
+
+// $table->define_headers(array(get_string('questiontype', 'question'), get_string('numquestions', 'question'),
+//  get_string('version'), get_string('requires', 'admin'), get_string('availableq', 'question'),
+//         get_string('settings'), get_string('uninstallplugin', 'core_admin')));
+
+$table->define_headers($headers);
+$table->define_columns($columns);
+$table->column_style('restore', 'text-align', 'center');
+$table->column_style('delete', 'text-align', 'center');
+$table->define_baseurl($PAGE->url);
+$table->set_attribute('id', 'questioncategoryable');
+$table->setup();
+
 foreach ($categories as $category) {
-    echo '<tr><td>';
-    echo $category->category_name;
-    echo '</td><td>';
-    echo $category->marksobtained;
-    echo '</td><td>';
-    echo $category->totalmarks;
-    echo '</td>';
-    echo '</tr>';
+
+    $table->add_data((array) $category);
 }
-echo '</table>';
+
+$table->finish_output();
+
+
+
+// echo '<table>';
+// foreach ($categories as $category) {
+//     echo '<tr><td>';
+//     echo $category->category_name;
+//     echo '</td><td>';
+//     echo $category->marksobtained;
+//     echo '</td><td>';
+//     echo $category->totalmarks;
+//     echo '</td>';
+//     echo '</tr>';
+// }
+// echo '</table>';
 echo $OUTPUT->footer();

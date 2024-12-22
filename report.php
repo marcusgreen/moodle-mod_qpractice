@@ -62,7 +62,6 @@ $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
-xdebug_break();
 $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
     $context
