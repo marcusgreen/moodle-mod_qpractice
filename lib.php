@@ -87,9 +87,10 @@ function upsert_categories(stdClass $qpractice) {
     global $DB;
     $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->coursemodule]);
     $recordstoinsert = [];
+    xdebug_break();
     foreach (array_keys($qpractice->categories) as $categoryid) {
         $recordstoinsert[] = (object) [
-            'qpracticeid' => $qpractice->coursemodule,
+            'qpracticeid' => $qpractice->id,
             'categoryid' => $categoryid
         ];
     }

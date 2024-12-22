@@ -44,7 +44,7 @@ $sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
 // join mdl_question_categories qcats on sessioncats.category = qcats.id where session.id = 1\G;
 // join mdl_question_categories qcats on sessioncats.session = session.id where session.id = 1;
 
-$sql = "SELECT qcats.id, qcats.name as category_name, session.marksobtained, session.totalmarks
+$sql = "SELECT qcats.id, qcats.name as category_name
         FROM {qpractice} qp
         JOIN {qpractice_session} session ON session.qpracticeid = qp.id
         JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
@@ -70,7 +70,37 @@ if ($cmid) {
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-xdebug_break();
+
+
+$sql = "SELECT * FROM {question_usages} qu
+        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
+        JOIN {qpractice_session} session ON session.questionusageid = qu.id
+        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
+        JOIN {question_versions} qver ON qver.questionid = qa.questionid
+        WHERE qu.contextid = :contextid
+        AND qas.fraction IS NOT NULL
+        AND session.id = :sessionid";
+
+
+$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
+
+foreach($categories as $category) {
+        $categorytotal = 0;
+        foreach ($qusage as $q) {
+            $sql = "SELECT qc.id as categoryid FROM {question_bank_entries} qbe
+                    JOIN {question_versions} qver on qver.questionbankentryid = qbe.id
+                    JOIN {question_categories} qc ON qbe.questioncategoryid = qc.id
+                    AND qver.questionid = :questionid";
+
+             $qcat = $DB->get_record_sql($sql, ['questionid' => $q->questionid]);
+            if($qcat->categoryid  == $category->id) {
+                $categorytotal += $q->fraction;
+            }
+        }
+        $category->total = $categorytotal;
+}
+
+
 $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_session_categories_report::class,
     $context
@@ -82,7 +112,6 @@ $PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
 //echo $report->output();
-xdebug_break();
 $t = new html_table();
 $t->head = array(get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice'));
 $t->data = $categories;
@@ -90,7 +119,7 @@ $t->data = $categories;
 $columns =[
     'category_name' => get_string('category', 'qpractice'),
     'marksobtained' => get_string('marksobtained', 'qpractice'),
-    'totalmarks' => get_string('totalmarks', 'qpractice'),
+    'categorytotal' => get_string('totalmarks', 'qpractice'),
 ];
 $headers =[
     get_string('category', 'qpractice'),
@@ -102,9 +131,6 @@ $headers =[
 
 $table = new flexible_table('questioncategories');
 
-// $table->define_headers(array(get_string('questiontype', 'question'), get_string('numquestions', 'question'),
-//  get_string('version'), get_string('requires', 'admin'), get_string('availableq', 'question'),
-//         get_string('settings'), get_string('uninstallplugin', 'core_admin')));
 
 $table->define_headers($headers);
 $table->define_columns($columns);
