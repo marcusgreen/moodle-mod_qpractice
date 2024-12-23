@@ -28,32 +28,6 @@ require_once("$CFG->libdir/formslib.php");
 $sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
 
 
-// $sql = 'SELECT qc.id, qcats.name AS category_name, cs.marksobtained,cs.totalmarks
-//         FROM {qpractice_session} cs
-//         JOIN {qpractice_session_cats} qsc ON cs.id = qsc.session
-//         JOIN {qpractice_categories} qc ON qsc.category = qc.id
-//         JOIN {question_categories} qcats ON qc.categoryid = qcats.id
-//         WHERE cs.id = :sessionid';
-
-// select  qcats.id, qcats.name as categroy_name,session.marksobtained, session.totalmarks
-// from mdl_qpractice qp join mdl_qpractice_session session on session.qpracticeid = qp.id
-// join mdl_qpractice_session_cats sessioncats on session.id = sessioncats.session
-// select  qcats.id, qcats.name as category_name, session.marksobtained, session.totalmarks
-// from mdl_qpractice qp join mdl_qpractice_session session on session.qpracticeid = qp.id
-// join mdl_qpractice_session_cats sessioncats on session.id = sessioncats.session
-// join mdl_question_categories qcats on sessioncats.category = qcats.id where session.id = 1\G;
-// join mdl_question_categories qcats on sessioncats.session = session.id where session.id = 1;
-
-$sql = "SELECT qcats.id, qcats.name as category_name
-        FROM {qpractice} qp
-        JOIN {qpractice_session} session ON session.qpracticeid = qp.id
-        JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
-        JOIN {question_categories} qcats ON sessioncats.category = qcats.id
-        WHERE session.id = :sessionid";
-
-$categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
-
-
 $cmid = required_param('cmid', PARAM_INT); // Course-Module id.
 
 if ($cmid) {
@@ -72,34 +46,6 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 
 
-$sql = "SELECT * FROM {question_usages} qu
-        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
-        JOIN {qpractice_session} session ON session.questionusageid = qu.id
-        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
-        JOIN {question_versions} qver ON qver.questionid = qa.questionid
-        WHERE qu.contextid = :contextid
-        AND qas.fraction IS NOT NULL
-        AND session.id = :sessionid";
-
-
-$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
-
-foreach($categories as $category) {
-        $categorytotal = 0;
-        foreach ($qusage as $q) {
-            $sql = "SELECT qc.id as categoryid FROM {question_bank_entries} qbe
-                    JOIN {question_versions} qver on qver.questionbankentryid = qbe.id
-                    JOIN {question_categories} qc ON qbe.questioncategoryid = qc.id
-                    AND qver.questionid = :questionid";
-
-             $qcat = $DB->get_record_sql($sql, ['questionid' => $q->questionid]);
-            if($qcat->categoryid  == $category->id) {
-                $categorytotal += $q->fraction;
-            }
-        }
-        $category->total = $categorytotal;
-}
-
 
 $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_session_categories_report::class,
@@ -117,19 +63,27 @@ $t->head = array(get_string('category', 'qpractice'), get_string('marksobtained'
 $t->data = $categories;
 //echo html_writer::table($t);
 $columns =[
-    'category_name' => get_string('category', 'qpractice'),
+    'category_name' => 'category_name',
     'marksobtained' => get_string('marksobtained', 'qpractice'),
     'categorytotal' => get_string('totalmarks', 'qpractice'),
 ];
 $headers =[
     get_string('category', 'qpractice'),
-    get_string('marksobtained', 'qpractice'),
-    get_string('totalmarks', 'qpractice'),
+    'Question count',
+     'Sum of marks',
 ];
 
-
-
 $table = new flexible_table('questioncategories');
+$table->sortable(true, 'category_name', SORT_ASC);
+$table->set_control_variables(array(
+    TABLE_VAR_SORT    => 'ssort',
+    TABLE_VAR_IFIRST  => 'sifirst',
+    TABLE_VAR_ILAST   => 'silast',
+    TABLE_VAR_PAGE    => 'spage'
+    ));
+
+$table->no_sorting('select');
+$table->no_sorting('status');
 
 
 $table->define_headers($headers);
@@ -139,9 +93,51 @@ $table->column_style('delete', 'text-align', 'center');
 $table->define_baseurl($PAGE->url);
 $table->set_attribute('id', 'questioncategoryable');
 $table->setup();
+xdebug_break();
+if ($table->get_sql_sort()) {
+    $sort = $table->get_sql_sort();
+} else {
+    $sort = '';
+}
+
+$sql = "SELECT distinct qcats.id, qcats.name as category_name
+        FROM {qpractice} qp
+        JOIN {qpractice_session} session ON session.qpracticeid = qp.id
+        JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
+        JOIN {question_categories} qcats ON sessioncats.category = qcats.id
+        WHERE session.id = :sessionid ";
+        $sql .= ' ORDER BY '.$sort;
+
+$categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
+
+
+$sql = "SELECT qa.questionid,qas.fraction,qbe.questioncategoryid as categoryid FROM {question_usages} qu
+        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
+        JOIN {qpractice_session} session ON session.questionusageid = qu.id
+        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
+        JOIN {question_versions} qver ON qver.questionid = qa.questionid
+        JOIN {question_bank_entries} qbe ON qbe.id = qver.questionbankentryid
+        WHERE qu.contextid = :contextid
+        AND qas.fraction IS NOT NULL
+        AND session.id = :sessionid";
+
+
+$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
+foreach($categories as $category) {
+        $categorytotal = 0;
+        $questioncount = 0;
+        foreach ($qusage as $q) {
+            if($q->categoryid  == $category->id) {
+                $categorytotal += $q->fraction;
+                $questioncount ++;
+            }
+        }
+        $category->questioncount = $questioncount;
+        $category->marksobtained = $categorytotal;
+}
 
 foreach ($categories as $category) {
-
+    unset($category->id);
     $table->add_data((array) $category);
 }
 
@@ -162,3 +158,4 @@ $table->finish_output();
 // }
 // echo '</table>';
 echo $OUTPUT->footer();
+xdebug_break();
