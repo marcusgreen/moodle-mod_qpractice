@@ -14,46 +14,60 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * JavaScript code for the gapfill question type.
+ * JavaScript code for the qpractice activity.
  *
- * @package    qtype
- * @subpackage gapfill
- * @copyright  2023 Marcus Green
+ * @subpackage qpractice
+ * @copyright  2024 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['jquery'], function($) {
-    return {
-        init: function() {
-        document.getElementById('id_select_all_none').addEventListener('click', e => {
-                var checkboxes = document.querySelectorAll("input[type='checkbox'].question_category");
-                checkboxes.forEach(checkbox =>{
-                    checkbox.checked = !checkbox.checked;
-                });
-        });
-        document.querySelectorAll("input[type='checkbox'].question_category").forEach(
-                input => input.addEventListener('click', function(event) {
-                    var checkboxid = event.target.id.split('_')[2];
-                    if(event.target.checked == true) {
-                    selectChildren(checkboxid, true);
-                    } else{
-                        selectChildren(checkboxid, false);
+export const init = () => {
 
-                    }
-                })
-            );
+    document.getElementById('id_select_all_none').addEventListener('click', function() {
+            var checkboxes = document.querySelectorAll("input[type='checkbox'].question_category");
+            checkboxes.forEach(checkbox =>{
+                checkbox.checked = !checkbox.checked;
+            });
+    });
+    document.querySelectorAll("input[type='checkbox'].question_category").forEach(
+            input => input.addEventListener('click', function(event) {
+                var checkboxid = event.target.id.split('_')[2];
+                if(event.target.checked == true) {
+                selectChildren(checkboxid, true);
+                } else{
+                    selectChildren(checkboxid, false);
 
-        }
+                }
+            })
+        );
     };
-    function selectChildren(checkboxid, isChecked){
-        // var parent = document.getElementById(parentid);
-        var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
-        checkboxes.forEach(function(checkbox) {
-            var thisparentid = checkbox.id.split('_')[4];
-            if(thisparentid == checkboxid){
-                checkbox.checked= isChecked;
+    syncCategoryValues();
+    function syncCategoryValues() {
+        const categoryElements = document.querySelectorAll('[name^="category["]');
+        debugger;
+        categoryElements.forEach(function(element) {
+            const categoryId = element.name.match(/\d+/)[0];
+            const matchingCheckbox = document.querySelector(`[id^="id_categories_${categoryId}"]`);
+            if (matchingCheckbox) {
+                matchingCheckbox.checked = element.checked;
             }
-
         });
     }
 
-});
+    //id_categories_2_parent_1
+
+/**
+ * Select or deselect child checkboxes
+ * @param {string} checkboxid - The ID of the parent checkbox
+ * @param {boolean} isChecked - Whether to check or uncheck the children
+ */
+function selectChildren(checkboxid, isChecked){
+    var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
+    checkboxes.forEach(function(checkbox) {
+        var thisparentid = checkbox.id.split('_')[4];
+        if(thisparentid == checkboxid){
+            checkbox.checked= isChecked;
+        }
+
+    });
+}
+

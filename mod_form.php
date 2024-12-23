@@ -44,10 +44,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
-        global $PAGE, $CFG, $COURSE;
+        global $PAGE, $CFG, $COURSE, $DB;
+        xdebug_break();
         $PAGE->requires->js_call_amd('mod_qpractice/qpractice', 'init');
 
         $mform = $this->_form;
+        $updateid = optional_param('return', 0, PARAM_INT);
 
         // Adding the "general" fieldset, where all the common settings are showed.
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -78,14 +80,18 @@ class mod_qpractice_mod_form extends moodleform_mod {
         // $course = $this->get_course();
         $coursecontext = context_course::instance($COURSE->id);
         $topcategory = null;
-        $categories = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
+        [$contextcategories, $categories] = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
+
+        foreach($contextcategories as $category) {
+            $mform->addElement('advcheckbox', "category[$category->id]", null, null, ['bhidden' => true]);
+        }
 
         $mform->addElement('html', '<div class="qpractice categories">');
 
 
         $el = $mform->createElement('html', $categories);
 
-        //$this->add_checkbox_controller(0, '', ['class' => 'selectall']);
+
         $mform->addElement('button', 'select_all_none', 'Select All/None');
 
         $mform->addGroup([$el], 'categories');
@@ -141,17 +147,30 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function set_data($default_values) {
         global $DB;
+        $mform = $this->_form;
 
         if (isset($default_values->topcategory)) {
           $this->_form->setDefault('selectcategories', '0');
         } else {
             $this->_form->setDefault('selectcategories', '1');
         }
+        $cats = $mform->getElement('categories');
 
         $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $default_values->id]);
         foreach ($categories as $c) {
-            $el = 'categories[' . $c->categoryid . ']';
-            $this->_form->setDefault($el, true);
+            $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
+            $elid = 'id_categories_'.$c->categoryid.'_parent_'.$parent->parent;
+            xdebug_break();
+            $elid = "category[$c->categoryid]";
+            // $elid = "id_category_$c->categoryid";
+            // $elid = 'id_category_17';
+             $elid = "category[$c->categoryid]";
+
+
+             $el = $mform->getElement($elid);
+             $el->setChecked(true);
+
+            //$this->_form->setDefault($el, 'checked');
         }
         parent::set_data($default_values);
     }

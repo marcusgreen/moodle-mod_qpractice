@@ -93,14 +93,28 @@ $table->column_style('delete', 'text-align', 'center');
 $table->define_baseurl($PAGE->url);
 $table->set_attribute('id', 'questioncategoryable');
 $table->setup();
-xdebug_break();
 if ($table->get_sql_sort()) {
     $sort = $table->get_sql_sort();
 } else {
     $sort = '';
 }
 
-$sql = "SELECT distinct qcats.id, qcats.name as category_name
+
+
+$sql = "SELECT qa.questionid,qa.maxmark, qas.fraction, qbe.questioncategoryid as categoryid FROM {question_usages} qu
+        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
+        JOIN {qpractice_session} session ON session.questionusageid = qu.id
+        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
+        JOIN {question_versions} qver ON qver.questionid = qa.questionid
+        JOIN {question_bank_entries} qbe ON qbe.id = qver.questionbankentryid
+        WHERE qu.contextid = :contextid
+        AND qas.fraction IS NOT NULL
+        AND session.id = :sessionid";
+xdebug_break();
+$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
+
+
+$sql = "SELECT distinct qcats.id, qcats.name as category_name, session.totalmarks
         FROM {qpractice} qp
         JOIN {qpractice_session} session ON session.qpracticeid = qp.id
         JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
@@ -110,19 +124,6 @@ $sql = "SELECT distinct qcats.id, qcats.name as category_name
 
 $categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
 
-
-$sql = "SELECT qa.questionid,qas.fraction,qbe.questioncategoryid as categoryid FROM {question_usages} qu
-        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
-        JOIN {qpractice_session} session ON session.questionusageid = qu.id
-        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
-        JOIN {question_versions} qver ON qver.questionid = qa.questionid
-        JOIN {question_bank_entries} qbe ON qbe.id = qver.questionbankentryid
-        WHERE qu.contextid = :contextid
-        AND qas.fraction IS NOT NULL
-        AND session.id = :sessionid";
-
-
-$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
 foreach($categories as $category) {
         $categorytotal = 0;
         $questioncount = 0;
