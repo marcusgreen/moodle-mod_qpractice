@@ -24,16 +24,11 @@ export const init = () => {
 
     setupSelectAll();
 
-
     function setupSelectAll() {
-    document.getElementById('id_select_all_none').addEventListener('click', function() {
-            var controlCheckboxes = document.querySelectorAll("input[type='checkbox'].question_category");
-            controlCheckboxes.forEach(controlCheckbox =>{
-                controlCheckbox.checked = !controlCheckbox.checked;
-            });
-            const formCheckboxes = document.querySelectorAll('[name^="form_category["]');
-            formCheckboxes.forEach(formCheckbox =>{
-                formCheckbox.checked = !formCheckbox.checked;
+            document.getElementById('id_select_all_none').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll(`[id^="id_category"]`);
+            checkboxes.forEach(checkbox =>{
+                checkbox.checked = !checkbox.checked;
             });
 
     });

@@ -26,6 +26,7 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once(dirname(__FILE__) . '/locallib.php');
 
+use qbank_managecategories\question_categories;
 /**
  * The main qpractice configuration form
  *
@@ -45,7 +46,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function definition() {
         global $PAGE, $CFG, $COURSE, $DB;
-        xdebug_break();
         $PAGE->requires->js_call_amd('mod_qpractice/qpractice', 'init');
 
         $mform = $this->_form;
@@ -79,25 +79,17 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         // $course = $this->get_course();
         $coursecontext = context_course::instance($COURSE->id);
-        $topcategory = null;
-        [$contextcategories, $categories] = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
+        $questioncategories = new question_categories(
+            $PAGE->url,
+            [$coursecontext],
+            10,
+            2,
 
-        foreach($contextcategories as $category) {
-            $mform->addElement('advcheckbox', "form_category[$category->id]", null, null, ['bhidden' => true]);
-        }
+        );
 
-        $mform->addElement('html', '<div class="qpractice categories">');
-
-
-        $el = $mform->createElement('html', $categories);
-
+        $this->add_categories($mform, reset($questioncategories->editlists)->items);
 
         $mform->addElement('button', 'select_all_none', 'Select All/None');
-
-        $mform->addGroup([$el], 'categories');
-
-
-        $mform->addElement('html', '</div>');
 
         $mform->addElement('header', 'qpracticefieldset', get_string('behaviours', 'qpractice'));
 
@@ -115,6 +107,25 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
+    }
+
+    public function add_categories($mform, $categories, $depth = 0) {
+        foreach($categories as $c) {
+            $name ='';
+            for($i=0; $i < $depth; $i++) {
+                $name .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            }
+
+            $name  .=  $c->name.' ('.$c->questioncount.')';
+            $mform->addElement('advcheckbox', "category[$c->id]", null, $name, ['bidden' => true]);
+            if($c->children) {
+                $depth++;
+                $this->add_categories($mform, $c->children, $depth);
+                $depth--;
+            } else{
+                $depth = 0;
+            }
+        }
     }
 
     /**
@@ -154,19 +165,18 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $this->_form->setDefault('selectcategories', '1');
         }
-        $cats = $mform->getElement('categories');
+        //$cats = $mform->getElement('categories');
 
         $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $default_values->id]);
         foreach ($categories as $c) {
             $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
-            $elid = 'id_form_categories_'.$c->categoryid.'_parent_'.$parent->parent;
-            xdebug_break();
+            $elid = 'id_categories_'.$c->categoryid.'_parent_'.$parent->parent;
             $elid = "category[$c->categoryid]";
-            // $elid = "id_category_$c->categoryid";
+            //$elid = "id_category_$c->categoryid";
             // $elid = 'id_category_17';
-             $elid = "form_category[$c->categoryid]";
+             //$elid = "category[$c->categoryid]";
 
-
+            xdebug_break();
              $el = $mform->getElement($elid);
              $el->setChecked(true);
 
