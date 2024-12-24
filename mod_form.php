@@ -83,7 +83,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         [$contextcategories, $categories] = qpractice_get_question_categories($coursecontext, $mform, $topcategory);
 
         foreach($contextcategories as $category) {
-            $mform->addElement('advcheckbox', "category[$category->id]", null, null, ['bhidden' => true]);
+            $mform->addElement('advcheckbox', "form_category[$category->id]", null, null, ['bhidden' => true]);
         }
 
         $mform->addElement('html', '<div class="qpractice categories">');
@@ -159,12 +159,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $default_values->id]);
         foreach ($categories as $c) {
             $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
-            $elid = 'id_categories_'.$c->categoryid.'_parent_'.$parent->parent;
+            $elid = 'id_form_categories_'.$c->categoryid.'_parent_'.$parent->parent;
             xdebug_break();
             $elid = "category[$c->categoryid]";
             // $elid = "id_category_$c->categoryid";
             // $elid = 'id_category_17';
-             $elid = "category[$c->categoryid]";
+             $elid = "form_category[$c->categoryid]";
 
 
              $el = $mform->getElement($elid);

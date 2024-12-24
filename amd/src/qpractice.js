@@ -22,12 +22,24 @@
  */
 export const init = () => {
 
+    setupSelectAll();
+
+
+    function setupSelectAll() {
     document.getElementById('id_select_all_none').addEventListener('click', function() {
-            var checkboxes = document.querySelectorAll("input[type='checkbox'].question_category");
-            checkboxes.forEach(checkbox =>{
-                checkbox.checked = !checkbox.checked;
+            var controlCheckboxes = document.querySelectorAll("input[type='checkbox'].question_category");
+            controlCheckboxes.forEach(controlCheckbox =>{
+                controlCheckbox.checked = !controlCheckbox.checked;
             });
+            const formCheckboxes = document.querySelectorAll('[name^="form_category["]');
+            formCheckboxes.forEach(formCheckbox =>{
+                formCheckbox.checked = !formCheckbox.checked;
+            });
+
     });
+``}
+
+    function setupChildren() {
     document.querySelectorAll("input[type='checkbox'].question_category").forEach(
             input => input.addEventListener('click', function(event) {
                 var checkboxid = event.target.id.split('_')[2];
@@ -40,10 +52,10 @@ export const init = () => {
             })
         );
     };
-    syncCategoryValues();
-    function syncCategoryValues() {
-        const categoryElements = document.querySelectorAll('[name^="category["]');
-        debugger;
+}
+    setupCategories();
+    function setupCategories() {
+        const categoryElements = document.querySelectorAll('[name^="form_category["]');
         categoryElements.forEach(function(element) {
             const categoryId = element.name.match(/\d+/)[0];
             const matchingCheckbox = document.querySelector(`[id^="id_categories_${categoryId}"]`);
@@ -53,7 +65,20 @@ export const init = () => {
         });
     }
 
-    //id_categories_2_parent_1
+    syncCategories();
+    function syncCategories() {
+        document.querySelectorAll('input[id^="id_categories_"]').forEach(
+            input => input.addEventListener('click', function(event) {
+                var id = input.id.split('_')[2];
+                var target = document.querySelector(`#id_form_category_${id}`);
+                if (target) {
+                    target.checked = !target.checked;
+                }
+
+            })
+        );
+
+    }
 
 /**
  * Select or deselect child checkboxes
