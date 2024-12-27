@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace mod_qpractice\reportbuilder\local\systemreports;
+use core_reportbuilder\local\helpers\database;
 
 use core_reportbuilder\system_report;
 
@@ -35,18 +36,24 @@ class qpractice_sessions_report extends system_report {
      * Initialise report, we need to set the main table, load our entities and set columns/filters
      */
     protected function initialise(): void {
-
-       // $this->course = get_course(courseid: $this->get_context()->instanceid);
-
+        global $COURSE;
         $sessions = new sessions();
-        $alias = $sessions->get_table_alias('sessions');
+        $sessionsalias = $sessions->get_table_alias('sessions');
         $this->add_entity($sessions);
-        $this->set_main_table('qpractice_session', $alias);
+        $this->set_main_table('qpractice_session', $sessionsalias);
+
+        // Add join with fully qualified column names
+       $this->add_join('JOIN {qpractice} qp ON qp.id = ' . $sessionsalias . '.qpracticeid');
+
+        $paramname = database::generate_param_name();
+        $this->add_base_condition_sql("qp.course = :$paramname", [$paramname => $COURSE->id]);
+
         $this->add_columns();
         $this->add_filters_from_entities(['sessions:marksobtained']);
         $this->add_filters_from_entities(['sessions:practicedate']);
         $this->set_downloadable(true, get_string('pluginname', 'mod_qpractice'));
     }
+
 
     /**
      * Validates access to view this report

@@ -62,7 +62,6 @@ class sessions extends base {
      */
     protected function get_all_columns(): array {
         $cmid = optional_param('id', '', PARAM_INT);
-        xdebug_break();
         $columns = [];
         $column = (new column(
             'practicedate',
@@ -70,12 +69,11 @@ class sessions extends base {
             $this->get_entity_name()
         ));
         $column->add_field('practicedate');
-        $column->add_field('id');
         $column->set_is_sortable(true);
         $column->add_callback(
             static function (string $practicedate,  \stdClass $sessionfields, $cmid) :string {
                 $practiceuserdate = userdate($practicedate);
-                //$cmid = optional_param('id', '', PARAM_INT);
+                $cmid = optional_param('id', '', PARAM_INT);
                 $category_url = new \moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionfields->id, 'cmid' => $cmid]);
                 return "<a  title='Click for breakdown' href='{$category_url}'>{$practiceuserdate}</a>";
             }

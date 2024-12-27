@@ -26,9 +26,9 @@ require_once(dirname(__FILE__) . '/renderer.php');
 require_once("$CFG->libdir/formslib.php");
 
 $sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
-
-
 $cmid = required_param('cmid', PARAM_INT); // Course-Module id.
+
+xdebug_break();
 
 if ($cmid) {
     if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
