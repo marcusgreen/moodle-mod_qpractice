@@ -42,11 +42,16 @@ class qpractice_sessions_report extends system_report {
         $this->add_entity($sessions);
         $this->set_main_table('qpractice_session', $sessionsalias);
 
+        xdebug_break();
+        $cmid = optional_param('id', '',PARAM_INT);
+        [$qpractice, $cminfo] = get_course_and_cm_from_cmid($cmid);
+
+
         // Add join with fully qualified column names
        $this->add_join('JOIN {qpractice} qp ON qp.id = ' . $sessionsalias . '.qpracticeid');
 
         $paramname = database::generate_param_name();
-        $this->add_base_condition_sql("qp.course = :$paramname", [$paramname => $COURSE->id]);
+        $this->add_base_condition_sql("qp.id = :$paramname", [$paramname => $qpractice->id]);
 
         $this->add_columns();
         $this->add_filters_from_entities(['sessions:marksobtained']);
