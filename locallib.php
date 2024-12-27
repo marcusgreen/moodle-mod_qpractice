@@ -64,12 +64,10 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     if (empty($context)) {
         return '';
     }
-    xdebug_break();
     $options = [];
     /* Get all categories in course/system context (for settings form) */
     if (get_config('qpractice', 'systemcontext')) {
         $questioncats = \qbank_managecategories([context_system::instance()]);
-        //$questioncats = question_category_options([context_system::instance()]);
     }
     $instanceid = optional_param('update', null, PARAM_INT);
 
@@ -146,7 +144,7 @@ class catTree {
  */
 function qpractice_session_create(stdClass $fromform, \context $context) : int {
     global $DB, $USER;
-
+    xdebug_break();
     $qpractice = new stdClass();
      /* $value = $fromform->optiontype;
      * type of practice (optiontype), is being set to 1 normal
@@ -188,7 +186,6 @@ function qpractice_session_create(stdClass $fromform, \context $context) : int {
 
     $qpractice->questionusageid = $quba->get_id();
     $sessionid = $DB->insert_record('qpractice_session', $qpractice);
-    xdebug_break();
     foreach ($fromform->categories as $categoryid => $value) {
         $DB->insert_record('qpractice_session_cats', ['category' => $categoryid, 'session' => $sessionid]);
     }
@@ -221,7 +218,6 @@ function qpractice_delete_attempt(int $sessionid) {
  * @return array
  */
 function get_available_questions_from_categories(array $categories) : array {
-    xdebug_break();
     /**@todo not implemented ? */
     $excludedqtypes = null;
     $questionids = question_bank::get_finder()->get_questions_from_categories($categories, $excludedqtypes);

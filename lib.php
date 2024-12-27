@@ -87,12 +87,13 @@ function upsert_categories(stdClass $qpractice) {
     global $DB;
     $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->coursemodule]);
     $recordstoinsert = [];
-    xdebug_break();
-    foreach (array_keys($qpractice->categories) as $categoryid) {
-        $recordstoinsert[] = (object) [
-            'qpracticeid' => $qpractice->id,
-            'categoryid' => $categoryid
-        ];
+    foreach ($qpractice->categories as $categoryid => $checked) {
+        if($checked > 0) {
+            $recordstoinsert[] = (object) [
+                'qpracticeid' => $qpractice->id,
+                'categoryid' => $categoryid
+            ];
+        }
     }
     $DB->insert_records('qpractice_categories', $recordstoinsert);
 }
@@ -111,7 +112,8 @@ function upsert_categories(stdClass $qpractice) {
  */
 function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
     global $DB;
-    $qpractice->categories = optional_param_array('categories', null, PARAM_INT);
+    // $qpractice->categories = optional_param_array('categories', null, PARAM_INT);
+
 
     $qpractice->timemodified = time();
     $qpractice->id = $qpractice->instance;

@@ -49,6 +49,7 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->setDisableShortForms(true);
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
         $mform->setType('eranchor', PARAM_TEXT);
+        xdebug_break();
         $categories = $this->_customdata['categories'];
         if (count($categories) > 1) {
             foreach ($categories as $category) {

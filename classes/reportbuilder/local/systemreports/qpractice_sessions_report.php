@@ -27,10 +27,17 @@ use mod_qpractice\reportbuilder\local\entities\sessions;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qpractice_sessions_report extends system_report {
+
+    /** @var \stdClass the course to constrain the report to. */
+    protected \stdClass $course;
+
     /**
      * Initialise report, we need to set the main table, load our entities and set columns/filters
      */
     protected function initialise(): void {
+
+       // $this->course = get_course(courseid: $this->get_context()->instanceid);
+
         $sessions = new sessions();
         $alias = $sessions->get_table_alias('sessions');
         $this->add_entity($sessions);

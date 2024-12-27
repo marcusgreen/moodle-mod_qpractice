@@ -61,8 +61,8 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $mform->setType('name', PARAM_CLEAN);
         }
-        $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        //$mform->addRule('name', null, 'required', null, 'client');
+       // $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
         $mform->addHelpButton('name', 'qpracticename', 'qpractice');
 
 
@@ -117,7 +117,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
             }
 
             $name  .=  $c->name.' ('.$c->questioncount.')';
-            $mform->addElement('advcheckbox', "category[$c->id]", null, $name, ['bidden' => true]);
+            $mform->addElement('advcheckbox', "categories[$c->id]", null, $name, ['bidden' => true]);
             if($c->children) {
                 $depth++;
                 $this->add_categories($mform, $c->children, $depth);
@@ -159,7 +159,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function set_data($default_values) {
         global $DB;
         $mform = $this->_form;
-
         if (isset($default_values->topcategory)) {
           $this->_form->setDefault('selectcategories', '0');
         } else {
@@ -171,12 +170,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
         foreach ($categories as $c) {
             $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
             $elid = 'id_categories_'.$c->categoryid.'_parent_'.$parent->parent;
-            $elid = "category[$c->categoryid]";
-            //$elid = "id_category_$c->categoryid";
+            $elid = "categories[$c->categoryid]";
+            $elid = "id_category_$c->categoryid";
             // $elid = 'id_category_17';
-             //$elid = "category[$c->categoryid]";
+             $elid = "categories[$c->categoryid]";
+             xdebug_break();
 
-            xdebug_break();
              $el = $mform->getElement($elid);
              $el->setChecked(true);
 
@@ -196,8 +195,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        $categories = optional_param_array('categories', '', PARAM_INT );
-        if (!$categories) {
+        $hasValues = array_filter($data, function($data) {
+            return $data != 0;
+        });
+
+        //$categories = optional_param_array('categories', '', PARAM_INT );
+        if (!$hasValues) {
             $errors['categories'] = 'No categories selected';
         }
         if (!isset($data['behaviour'])) {

@@ -51,8 +51,9 @@ $params = array(
 );
 $event = mod_qpractice\event\qpractice_viewed::create($params);
 $event->trigger();
+xdebug_break();
 
-$PAGE->set_url('/mod/qpractice/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/qpractice/view.php', ['id' => $cm->id, 'courseid' => $course->id]);
 $PAGE->set_title(format_string($qpractice->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($context);
