@@ -61,20 +61,34 @@ class sessions extends base {
      * @return column[]
      */
     protected function get_all_columns(): array {
-        $cmid = optional_param('id', '', PARAM_INT);
         $columns = [];
+
+        $sessionsalias = $this->get_table_alias('sessions');
+        $column = (new column(
+            'id',
+            new lang_string('sessionid', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field("{$sessionsalias}.id", 'sessionid');
+
+         $columns[] = $column;
+
         $column = (new column(
             'practicedate',
             new lang_string('practicedate', 'mod_qpractice'),
             $this->get_entity_name()
         ));
-        $column->add_field('practicedate');
+        xdebug_break();
+        $column->add_field( 'practicedate');
+        $column->add_field("{$sessionsalias}.id", 'sessionid');
+
         $column->set_is_sortable(true);
         $column->add_callback(
-            static function (string $practicedate,  \stdClass $sessionfields, $cmid) :string {
+            static function (string $practicedate,  \stdClass $sessionfields, $cmid, $sessionid) :string {
                 $practiceuserdate = userdate($practicedate);
+                xdebug_break();
                 $cmid = optional_param('id', '', PARAM_INT);
-                $category_url = new \moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionfields->id, 'cmid' => $cmid]);
+                $category_url = new \moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionfields->sessionid, 'cmid' => $cmid]);
                 return "<a  title='Click for breakdown' href='{$category_url}'>{$practiceuserdate}</a>";
             }
         );
@@ -89,14 +103,6 @@ class sessions extends base {
         $column->add_field('totalmarks');
         $column->set_is_sortable(true);
 
-        $columns[] = $column;
-
-        $column = (new column(
-            'id',
-            new lang_string('sessionid', 'mod_qpractice'),
-            $this->get_entity_name()
-        ));
-        $column->add_field('id');
         $columns[] = $column;
 
         $column = (new column(

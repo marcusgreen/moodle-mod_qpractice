@@ -49,7 +49,7 @@ class qpractice_sessions_report extends system_report {
         $qpractice = get_coursemodule_from_id('qpractice', $cmid);
 
         // Add join with fully qualified column names
-       $this->add_join('JOIN {qpractice} qp ON qp.id = ' . $sessionsalias . '.qpracticeid');
+        $this->add_join('JOIN {qpractice} qp ON qp.id = ' . $sessionsalias . '.qpracticeid');
 
         $paramname = database::generate_param_name();
         $this->add_base_condition_sql("qp.id = :$paramname", [$paramname => $qpractice->instance]);

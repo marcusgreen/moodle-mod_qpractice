@@ -28,12 +28,10 @@ require_once("$CFG->libdir/formslib.php");
 $sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
 $cmid = required_param('cmid', PARAM_INT); // Course-Module id.
 
-xdebug_break();
 
 if ($cmid) {
     if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $cmid);
-
     }
     if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
         throw new \moodle_exception('coursemisconf');
@@ -44,8 +42,6 @@ if ($cmid) {
 require_login($course, true, $cm);
 
 $context = context_module::instance($cm->id);
-
-
 
 $report = \core_reportbuilder\system_report_factory::create(
     \mod_qpractice\reportbuilder\local\systemreports\qpractice_session_categories_report::class,
