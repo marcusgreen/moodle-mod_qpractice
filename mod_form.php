@@ -25,6 +25,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once(dirname(__FILE__) . '/locallib.php');
+use qbank_managecategories\helper;
 
 use qbank_managecategories\question_categories;
 /**
@@ -76,18 +77,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $currentbehaviour = '';
         }
+        $questioncategories =  $this->get_categories($COURSE->id);
 
-        // $course = $this->get_course();
-        $coursecontext = context_course::instance($COURSE->id);
-        $questioncategories = new question_categories(
-            $PAGE->url,
-            [$coursecontext],
-            10,
-            2,
-
-        );
-
-        $this->add_categories($mform, reset($questioncategories->editlists)->items);
+        $this->add_categories($mform, $questioncategories);
 
         $mform->addElement('button', 'select_all_none', 'Select All/None');
 
@@ -107,6 +99,39 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $this->standard_coursemodule_elements();
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
+    }
+
+    /**
+     * Return all question categories within the given course context.
+     *
+     * @param int $courseid The course id to fetch categories for.
+     * @return array List of categories (stdClass) indexed by id.
+     */
+    public function get_categories(int $courseid): array {
+        global $DB;
+
+        $sql = "SELECT qcat.id, qcat.parent, qcat.name
+            FROM mdl_course_modules m
+            JOIN mdl_context ctx ON m.id = ctx.instanceid
+            JOIN mdl_question_categories qcat ON qcat.contextid = ctx.id
+            JOIN mdl_modules mm ON m.module = mm.id
+            WHERE mm.name = 'qbank'
+            AND ctx.contextlevel = 70
+            AND m.course = :courseid
+            AND qcat.parent <> 0";
+
+        xdebug_break();
+
+        $categories = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        foreach($categories as &$qcat) {
+            $questionids = question_bank::get_finder()->get_questions_from_categories([$qcat->id], null);
+            $qcat->questioncount = count($questionids);
+            $qcat->children=0;
+        }
+
+
+
+        return $categories ?: [];
     }
 
     public function add_categories($mform, $categories, $depth = 0) {
