@@ -108,30 +108,32 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @return array List of categories (stdClass) indexed by id.
      */
     public function get_categories(int $courseid): array {
-        global $DB;
+        global $DB, $PAGE, $COURSE;
 
-        $sql = "SELECT qcat.id, qcat.parent, qcat.name
-            FROM mdl_course_modules m
-            JOIN mdl_context ctx ON m.id = ctx.instanceid
-            JOIN mdl_question_categories qcat ON qcat.contextid = ctx.id
-            JOIN mdl_modules mm ON m.module = mm.id
-            WHERE mm.name = 'qbank'
-            AND ctx.contextlevel = 70
-            AND m.course = :courseid
-            AND qcat.parent <> 0";
 
-        xdebug_break();
+        $sql = "select * from {course_modules} where module = 16 and course = :courseid";
+        $qbanks = $DB->get_records_sql($sql, ['courseid' => $courseid]);
 
-        $categories = $DB->get_records_sql($sql, ['courseid' => $courseid]);
-        foreach($categories as &$qcat) {
-            $questionids = question_bank::get_finder()->get_questions_from_categories([$qcat->id], null);
-            $qcat->questioncount = count($questionids);
-            $qcat->children=0;
+
+        $contexts = [];
+        foreach($qbanks as $qbank) {
+            $contexts[] = \context_module::instance($qbank->id);
         }
 
-
+        $cats = new question_categories(
+            $PAGE->url,
+            $contexts,
+            $COURSE->id,
+            $COURSE->id
+        );
+        $categories = [];
+        $editlist = $cats->editlists;
+        foreach($editlist as $list) {
+           $categories = array_merge($categories, $list->items);
+        }
 
         return $categories ?: [];
+
     }
 
     public function add_categories($mform, $categories, $depth = 0) {
@@ -143,7 +145,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
             $name  .=  $c->name.' ('.$c->questioncount.')';
             $mform->addElement('advcheckbox', "categories[$c->id]", null, $name, ['bidden' => true]);
-            if($c->children) {
+            if(isset($c->children)) {
                 $depth++;
                 $this->add_categories($mform, $c->children, $depth);
                 $depth--;

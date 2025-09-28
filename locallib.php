@@ -144,7 +144,6 @@ class catTree {
  */
 function qpractice_session_create(stdClass $fromform, \context $context) : int {
     global $DB, $USER;
-    xdebug_break();
     $qpractice = new stdClass();
      /* $value = $fromform->optiontype;
      * type of practice (optiontype), is being set to 1 normal
@@ -286,7 +285,6 @@ function get_next_question(int $sessionid, question_usage_by_activity $quba) : i
     $categories = $DB->get_records('qpractice_session_cats', ['session' => $sessionid], '', 'category');
     $results = $DB->get_records_menu('question_attempts', array('questionusageid' => $session->questionusageid),
             'id', 'id, questionid');
-    xdebug_break();
     $categories = $DB->get_records_menu('qpractice_session_cats', ['session' => $sessionid], '', 'id, category');
     $questionid = choose_other_question($categories, $results);
 
