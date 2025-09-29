@@ -34,6 +34,7 @@ $id = required_param('id', PARAM_INT); // Course_module ID.
 $PAGE->set_url('/mod/qpractice/startattempt.php', array('id' => $id));
 $DB->set_field('qpractice_session', 'status', 'finished', null);
 
+xdebug_break();
 if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
@@ -43,7 +44,7 @@ if ($id) {
     }
     $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
 
-    $sql = "SELECT qpcat.categoryid,qcat.name FROM {qpractice_categories} qpcat
+    $sql = "SELECT qpcat.id, qpcat.categoryid,qcat.name FROM {qpractice_categories} qpcat
             JOIN {question_categories} qcat
             ON qpcat.categoryid = qcat.id
             WHERE qpcat.qpracticeid = :qpracticeid";

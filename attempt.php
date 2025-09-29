@@ -37,7 +37,6 @@ $course = $DB->get_record('course', array('id' => $cm->course));
 
 require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
-xdebug_break();
 require_capability('mod/qpractice:attempt', $context);
 $params = array(
     'objectid' => $cm->id,

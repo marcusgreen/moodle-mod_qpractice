@@ -51,10 +51,12 @@ $report = \core_reportbuilder\system_report_factory::create(
 $backurl = new moodle_url('/mod/qpractice/view.php', array('id' => $sessionid));
 $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
+$PAGE->set_url('/mod/qpractice/report_by_category.php');
 
 echo $OUTPUT->header();
 //echo $report->output();
 $t = new html_table();
+xdebug_break();
 $t->head = array(get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice'));
 $t->data = $categories;
 //echo html_writer::table($t);

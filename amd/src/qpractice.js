@@ -24,70 +24,20 @@ export const init = () => {
 
     setupSelectAll();
 
+    /**
+     * Sets up event listeners for selecting all or none of the checkboxes.
+     *
+     */
     function setupSelectAll() {
-            document.getElementById('id_select_all_none').addEventListener('click', function() {
-            const checkboxes = document.querySelectorAll(`[id^="id_category"]`);
+        document.getElementById('id_select_all_none').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll(`[id^="id_categories"]`);
             checkboxes.forEach(checkbox =>{
                 checkbox.checked = !checkbox.checked;
             });
 
-    });
-``}
-
-    function setupChildren() {
-    document.querySelectorAll("input[type='checkbox'].question_category").forEach(
-            input => input.addEventListener('click', function(event) {
-                var checkboxid = event.target.id.split('_')[2];
-                if(event.target.checked == true) {
-                selectChildren(checkboxid, true);
-                } else{
-                    selectChildren(checkboxid, false);
-
-                }
-            })
-        );
-    };
-}
-    setupCategories();
-    function setupCategories() {
-        const categoryElements = document.querySelectorAll('[name^="form_category["]');
-        categoryElements.forEach(function(element) {
-            const categoryId = element.name.match(/\d+/)[0];
-            const matchingCheckbox = document.querySelector(`[id^="id_categories_${categoryId}"]`);
-            if (matchingCheckbox) {
-                matchingCheckbox.checked = element.checked;
-            }
         });
     }
 
-    syncCategories();
-    function syncCategories() {
-        document.querySelectorAll('input[id^="id_categories_"]').forEach(
-            input => input.addEventListener('click', function(event) {
-                var id = input.id.split('_')[2];
-                var target = document.querySelector(`#id_form_category_${id}`);
-                if (target) {
-                    target.checked = !target.checked;
-                }
+};
 
-            })
-        );
-
-    }
-
-/**
- * Select or deselect child checkboxes
- * @param {string} checkboxid - The ID of the parent checkbox
- * @param {boolean} isChecked - Whether to check or uncheck the children
- */
-function selectChildren(checkboxid, isChecked){
-    var checkboxes =  document.querySelectorAll("input[type='checkbox'].question_category");
-    checkboxes.forEach(function(checkbox) {
-        var thisparentid = checkbox.id.split('_')[4];
-        if(thisparentid == checkboxid){
-            checkbox.checked= isChecked;
-        }
-
-    });
-}
 
