@@ -62,7 +62,6 @@ class sessions extends base {
      */
     protected function get_all_columns(): array {
         $columns = [];
-
         $sessionsalias = $this->get_table_alias('sessions');
         $column = (new column(
             'id',
@@ -78,11 +77,10 @@ class sessions extends base {
             new lang_string('practicedate', 'mod_qpractice'),
             $this->get_entity_name()
         ));
-        xdebug_break();
         $column->add_field( 'practicedate');
         $column->add_field("{$sessionsalias}.id", 'sessionid');
 
-        $column->set_is_sortable(false);
+        $column->set_is_sortable(true);
         $column->add_callback(
             static function (string $practicedate,  \stdClass $sessionfields, $cmid, $sessionid) :string {
                 return userdate($practicedate). ' ';
@@ -97,7 +95,7 @@ class sessions extends base {
             $this->get_entity_name()
         ));
         $column->add_field('totalmarks');
-        $column->set_is_sortable(false);
+        $column->set_is_sortable(true);
 
         $columns[] = $column;
 
@@ -108,7 +106,7 @@ class sessions extends base {
         ));
         $column->add_field('marksobtained');
         $column->add_field('totalmarks');
-        $column->set_is_sortable(false);
+        $column->set_is_sortable(true);
         $column->add_callback(
             static function (string $marksobtained, \stdClass $r) :string {
                 return $marksobtained .'/'. $r->totalmarks;
@@ -123,7 +121,7 @@ class sessions extends base {
             $this->get_entity_name()
         ));
         $column->add_field('totalnoofquestions');
-        $column->set_is_sortable(false);
+        $column->set_is_sortable(true);
 
         $columns[] = $column;
 
@@ -133,7 +131,7 @@ class sessions extends base {
             $this->get_entity_name()
         ));
         $column->add_field('totalnoofquestionsright');
-        $column->set_is_sortable(false);
+        $column->set_is_sortable(true);
 
         $columns[] = $column;
 

@@ -42,17 +42,28 @@ class qpractice_sessions_report extends system_report {
         $this->add_entity($sessions);
         $this->set_main_table('qpractice_session', $sessionsalias);
 
-        xdebug_break();
-        $cmid = optional_param('id', '',PARAM_INT);
-        [$qpractice, $cminfo] = get_course_and_cm_from_cmid($cmid);
-
-        $qpractice = get_coursemodule_from_id('qpractice', $cmid);
+        // Determine the current activity via context; avoid relying on request params
+        $context = $this->get_context();
+        if ($context instanceof \context_module) {
+            $cmid = $context->instanceid;
+        } else {
+            $cmid = optional_param('id', 0, PARAM_INT);
+        }
+        if ($cmid) {
+            $cm = get_coursemodule_from_id('qpractice', $cmid, 0, false, MUST_EXIST);
+            $qpracticeinstanceid = $cm->instance;
+        } else {
+            // Fallback: no cmid available, skip constraining to a single instance
+            $qpracticeinstanceid = null;
+        }
 
         // Add join with fully qualified column names
         $this->add_join('JOIN {qpractice} qp ON qp.id = ' . $sessionsalias . '.qpracticeid');
 
-        $paramname = database::generate_param_name();
-        $this->add_base_condition_sql("qp.id = :$paramname", [$paramname => $qpractice->instance]);
+        if ($qpracticeinstanceid !== null) {
+            $paramname = database::generate_param_name();
+            $this->add_base_condition_sql("qp.id = :$paramname", [$paramname => $qpracticeinstanceid]);
+        }
 
         $this->add_columns();
         $this->add_filters_from_entities(['sessions:marksobtained']);

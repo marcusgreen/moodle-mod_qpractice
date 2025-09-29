@@ -39,16 +39,11 @@ if ($cmid) {
 
 require_login($course, true, $cm);
 
-$context = context_module::instance($cm->id);
-
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
 require_once(dirname(__FILE__).'/lib.php');
-
-$courseid = required_param('id', PARAM_INT);   // Course.
 
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/mod/qpractice/report.php'));
+$PAGE->set_url(new moodle_url('/mod/qpractice/report.php', ['id' => $cm->id]));
 $params = [
     'objectid' => $cm->id,
     'context' => $context
