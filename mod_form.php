@@ -184,7 +184,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $this->_form->setDefault('selectcategories', '1');
         }
-        // $cats = $mform->getElement('categories');
 
         $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $defaultvalues->id]);
         foreach ($categories as $c) {
@@ -199,7 +198,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
              $el = $mform->getElement($elid);
              $el->setChecked(true);
 
-            // $this->_form->setDefault($el, 'checked');
         }
         parent::set_data($defaultvalues);
     }
@@ -219,7 +217,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
             return $data != 0;
         });
 
-        // $categories = optional_param_array('categories', '', PARAM_INT );
         if (!$hasvalues) {
             $errors['categories'] = 'No categories selected';
         }

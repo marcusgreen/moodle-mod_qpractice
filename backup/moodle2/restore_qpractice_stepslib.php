@@ -105,8 +105,7 @@ class restore_qpractice_activity_structure_step extends restore_questions_activi
     }
 
     /**
-     * Deal with files check this works
-     * @todo check this works
+     * Deal with files (check this works)
      *
      * @return void
      */
