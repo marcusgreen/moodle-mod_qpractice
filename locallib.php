@@ -25,12 +25,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
-// Might need this
-// $categories = get_categories_for_contexts($contextslist, 'parent, sortorder, name ASC', $top);
 
 /**
  * Consider for deletion.
- * @todo this doesn't seem to be used
+ * This doesn't seem to be used
  *
  * @param \context $context
  * @return void
@@ -45,9 +43,6 @@ function qpractice_make_default_categories($context) {
 
     return $defaultcategoryobj;
 }
-/*
-
-*/
 
 /**
  * This function returns an array of question bank categories accessible to the
@@ -59,7 +54,7 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-function qpractice_get_question_categories(\context $context, $mform, int $top = null, array $categories = null): array {
+function qpractice_get_question_categories(\context $context, $mform, ?int $top, array $categories = null): array {
     global $DB;
     if (empty($context)) {
         return '';
@@ -102,6 +97,9 @@ function qpractice_get_question_categories(\context $context, $mform, int $top =
 }
 
 class catTree {
+    /**
+     * Class to build a tree of question categories with checkboxes for selection.
+     */
     public $html;
     /**
      * Build tree of categories with checkboxes to select the ones to
@@ -121,13 +119,12 @@ class catTree {
                 $id = 'categories[' . $element->id . ']_parent[' . $element->parent . ']';
                 $checked = ($element->checked) ? "checked" : "";
                 $this->html .= $mform->createElement('checkbox', $id, '', $element->name, ['class' => 'question_category', $checked, 'group' => 1])->toHtml() . $questioncount;
-                $children = $this->buildTree($mform, $elements, $element->id);
+                $children = $this->buildtree($mform, $elements, $element->id);
                 if ($children) {
                     $element->children = $children;
                 }
                 $this->html .= "</li>";
                 $element->name;
-                $branch[] = $element;
             }
         }
         $this->html .= "</ul>";
@@ -209,13 +206,12 @@ function qpractice_delete_attempt(int $sessionid) {
 }
 
 /**
- * Get questionid's from category and any subcategories
+ * Get questionid's from category and any subcategories.
  *
  * @param int $categoryid
  * @return array
  */
 function get_available_questions_from_categories(array $categories): array {
-    /**@todo not implemented ? */
     $excludedqtypes = null;
     $questionids = question_bank::get_finder()->get_questions_from_categories($categories, $excludedqtypes);
 
