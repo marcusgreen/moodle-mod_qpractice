@@ -20,8 +20,8 @@
  * @package    mod_qpractice
  * @category   test
  * @copyright  2019 Marcus Green
- * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
- */
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * */
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -31,9 +31,10 @@ require_once($CFG->dirroot . '/mod/qpractice/lib.php');
 /**
  * PHPunit tests of the qpractice (question practice) moodle activity
  *
- * @copyright  2019 Marcus Green
- * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
- */
+ * @package     mod_qpractice
+ * @copyright   2023 Marcus Green
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *  */
 final class lib_test extends advanced_testcase {
     /**
      * instance of question practice for use

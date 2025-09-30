@@ -118,7 +118,17 @@ class catTree {
                 $questioncount = '<span class="question_count">(' . $element->questioncount . ')</span>';
                 $id = 'categories[' . $element->id . ']_parent[' . $element->parent . ']';
                 $checked = ($element->checked) ? "checked" : "";
-                $this->html .= $mform->createElement('checkbox', $id, '', $element->name, ['class' => 'question_category', $checked, 'group' => 1])->toHtml() . $questioncount;
+                $this->html .= $mform->createElement(
+                    'checkbox',
+                    $id,
+                    '',
+                    $element->name,
+                    [
+                        'class' => 'question_category',
+                        'checked' => $checked,
+                        'group' => 1,
+                    ]
+                )->toHtml() . $questioncount;
                 $children = $this->buildtree($mform, $elements, $element->id);
                 if ($children) {
                     $element->children = $children;

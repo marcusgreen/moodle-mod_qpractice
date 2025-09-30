@@ -17,11 +17,11 @@
 /**
  * Views overall summary of your current attempt.
  *
- *
  * @package    mod_qpractice
  * @copyright  2013 Jayesh Anandani
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->libdir . '/questionlib.php');
 require_once(dirname(__FILE__) . '/renderer.php');
@@ -34,6 +34,7 @@ $course = $DB->get_record('course', ['id' => $cm->course]);
 $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 
 require_login($course, true, $cm);
+
 $context = context_module::instance($cm->id);
 
 $params = [
@@ -83,9 +84,7 @@ $PAGE->set_url('/mod/qpractice/summary.php', ['id' => $sessionid]);
 $output = $PAGE->get_renderer('mod_qpractice');
 
 echo $OUTPUT->header();
-
 echo $output->summary_table($sessionid);
-
 echo $output->summary_form($sessionid);
 
 // Finish the page.
