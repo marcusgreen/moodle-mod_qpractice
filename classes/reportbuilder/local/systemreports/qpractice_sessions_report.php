@@ -16,9 +16,7 @@
 
 namespace mod_qpractice\reportbuilder\local\systemreports;
 use core_reportbuilder\local\helpers\database;
-
 use core_reportbuilder\system_report;
-
 use mod_qpractice\reportbuilder\local\entities\sessions;
 
 /**
@@ -28,7 +26,6 @@ use mod_qpractice\reportbuilder\local\entities\sessions;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class qpractice_sessions_report extends system_report {
-
     /** @var \stdClass the course to constrain the report to. */
     protected \stdClass $course;
 
@@ -92,7 +89,7 @@ class qpractice_sessions_report extends system_report {
             'sessions:practicedate',
             'sessions:marksobtained',
             'sessions:totalnoofquestions',
-            'sessions:totalnoofquestionsright'
+            'sessions:totalnoofquestionsright',
         ];
         $this->add_columns_from_entities($columns);
     }

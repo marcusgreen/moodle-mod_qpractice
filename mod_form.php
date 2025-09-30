@@ -39,7 +39,6 @@ use qbank_managecategories\question_categories;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_qpractice_mod_form extends moodleform_mod {
-
     /**
      * Create the interface elements
      *
@@ -56,14 +55,13 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         // Adding the standard "name" field.
-        $mform->addElement('text', 'name', get_string('qpracticename', 'qpractice'), array('size' => '64'));
+        $mform->addElement('text', 'name', get_string('qpracticename', 'qpractice'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
             $mform->setType('name', PARAM_CLEAN);
         }
         $mform->addHelpButton('name', 'qpracticename', 'qpractice');
-
 
         $this->standard_intro_elements();
 
@@ -75,7 +73,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $currentbehaviour = '';
         }
-        $questioncategories =  $this->get_categories($COURSE->id);
+        $questioncategories = $this->get_categories($COURSE->id);
 
         $this->add_categories($mform, $questioncategories);
 
@@ -108,13 +106,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function get_categories(int $courseid): array {
         global $DB, $PAGE, $COURSE;
 
-
         $sql = "select * from {course_modules} where module = 16 and course = :courseid";
         $qbanks = $DB->get_records_sql($sql, ['courseid' => $courseid]);
 
-
         $contexts = [];
-        foreach($qbanks as $qbank) {
+        foreach ($qbanks as $qbank) {
             $contexts[] = \context_module::instance($qbank->id);
         }
 
@@ -126,28 +122,27 @@ class mod_qpractice_mod_form extends moodleform_mod {
         );
         $categories = [];
         $editlist = $cats->editlists;
-        foreach($editlist as $list) {
-           $categories = array_merge($categories, $list->items);
+        foreach ($editlist as $list) {
+            $categories = array_merge($categories, $list->items);
         }
 
         return $categories ?: [];
-
     }
 
     public function add_categories($mform, $categories, $depth = 0) {
-        foreach($categories as $c) {
-            $name ='';
-            for($i=0; $i < $depth; $i++) {
+        foreach ($categories as $c) {
+            $name = '';
+            for ($i = 0; $i < $depth; $i++) {
                 $name .= '&nbsp;&nbsp;&nbsp;&nbsp;';
             }
 
-            $name  .=  $c->name.' ('.$c->questioncount.')';
+            $name  .= $c->name . ' (' . $c->questioncount . ')';
             $mform->addElement('advcheckbox', "categories[$c->id]", null, $name, ['bidden' => true]);
-            if(isset($c->children)) {
+            if (isset($c->children)) {
                 $depth++;
                 $this->add_categories($mform, $c->children, $depth);
                 $depth--;
-            } else{
+            } else {
                 $depth = 0;
             }
         }
@@ -181,20 +176,20 @@ class mod_qpractice_mod_form extends moodleform_mod {
      *
      * @param mixed $question object or array of default values
      */
-    public function set_data($default_values) {
+    public function set_data($defaultvalues) {
         global $DB;
         $mform = $this->_form;
-        if (isset($default_values->topcategory)) {
-          $this->_form->setDefault('selectcategories', '0');
+        if (isset($defaultvalues->topcategory)) {
+            $this->_form->setDefault('selectcategories', '0');
         } else {
             $this->_form->setDefault('selectcategories', '1');
         }
-        //$cats = $mform->getElement('categories');
+        // $cats = $mform->getElement('categories');
 
-        $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $default_values->id]);
+        $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $defaultvalues->id]);
         foreach ($categories as $c) {
             $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
-            $elid = 'id_categories_'.$c->categoryid.'_parent_'.$parent->parent;
+            $elid = 'id_categories_' . $c->categoryid . '_parent_' . $parent->parent;
             $elid = "categories[$c->categoryid]";
             $elid = "id_category_$c->categoryid";
             // $elid = 'id_category_17';
@@ -204,9 +199,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
              $el = $mform->getElement($elid);
              $el->setChecked(true);
 
-            //$this->_form->setDefault($el, 'checked');
+            // $this->_form->setDefault($el, 'checked');
         }
-        parent::set_data($default_values);
+        parent::set_data($defaultvalues);
     }
 
 
@@ -220,12 +215,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        $hasValues = array_filter($data, function($data) {
+        $hasvalues = array_filter($data, function ($data) {
             return $data != 0;
         });
 
-        //$categories = optional_param_array('categories', '', PARAM_INT );
-        if (!$hasValues) {
+        // $categories = optional_param_array('categories', '', PARAM_INT );
+        if (!$hasvalues) {
             $errors['categories'] = 'No categories selected';
         }
         if (!isset($data['behaviour'])) {
@@ -234,5 +229,4 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         return $errors;
     }
-
 }

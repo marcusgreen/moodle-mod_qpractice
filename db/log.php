@@ -29,9 +29,9 @@ defined('MOODLE_INTERNAL') || die();
 
 global $DB;
 
-$logs = array(
-    array('module' => 'qpractice', 'action' => 'add', 'mtable' => 'qpractice', 'field' => 'name'),
-    array('module' => 'qpractice', 'action' => 'update', 'mtable' => 'qpractice', 'field' => 'name'),
-    array('module' => 'qpractice', 'action' => 'view', 'mtable' => 'qpractice', 'field' => 'name'),
-    array('module' => 'qpractice', 'action' => 'view all', 'mtable' => 'qpractice', 'field' => 'name')
-);
+$logs = [
+    ['module' => 'qpractice', 'action' => 'add', 'mtable' => 'qpractice', 'field' => 'name'],
+    ['module' => 'qpractice', 'action' => 'update', 'mtable' => 'qpractice', 'field' => 'name'],
+    ['module' => 'qpractice', 'action' => 'view', 'mtable' => 'qpractice', 'field' => 'name'],
+    ['module' => 'qpractice', 'action' => 'view all', 'mtable' => 'qpractice', 'field' => 'name'],
+];

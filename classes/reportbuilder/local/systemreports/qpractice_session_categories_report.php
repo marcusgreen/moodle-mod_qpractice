@@ -17,7 +17,6 @@
 namespace mod_qpractice\reportbuilder\local\systemreports;
 
 use core_reportbuilder\system_report;
-
 use mod_qpractice\reportbuilder\local\entities\session_categories;
 
 /**
@@ -31,18 +30,17 @@ class qpractice_session_categories_report extends system_report {
      * Initialise report, we need to set the main table, load our entities and set columns/filters
      */
     protected function initialise(): void {
-        $session_categories = new session_categories();
-        $this->add_entity($session_categories);
+        $sessioncategories = new session_categories();
+        $this->add_entity($sessioncategories);
 
         $join = "LEFT JOIN {qpractice_session_cats} scats ON {qpractice_sessions}.id = scats.sessionid";
 
-        $session_categories->add_join($join);
+        $sessioncategories->add_join($join);
 
-        $alias = $session_categories->get_table_alias('qpractice_sessions');
+        $alias = $sessioncategories->get_table_alias('qpractice_sessions');
 
         $this->add_columns();
         $this->set_main_table('qpractice_session', $alias);
-
     }
 
     /**
@@ -62,7 +60,7 @@ class qpractice_session_categories_report extends system_report {
      */
     protected function add_columns(): void {
         $columns = [
-            'session_categories:practicedate'
+            'session_categories:practicedate',
         ];
         $this->add_columns_from_entities($columns);
     }

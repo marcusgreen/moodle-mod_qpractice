@@ -34,7 +34,7 @@ require_once($CFG->dirroot . '/mod/qpractice/lib.php');
  * @copyright  2019 Marcus Green
  * @license    http://www.gnu.org/copyleft/gpl.html GNU Public License
  */
-class mod_qpractice_lib_test extends advanced_testcase {
+final class lib_test extends advanced_testcase {
     /**
      * instance of question practice for use
      * in other methods
@@ -48,7 +48,7 @@ class mod_qpractice_lib_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_qpractice_add_instance() {
+    public function test_qpractice_add_instance(): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
         $id = qpractice_add_instance($this->qp);
@@ -60,7 +60,7 @@ class mod_qpractice_lib_test extends advanced_testcase {
      *
      * @return void
      */
-    public function test_qpractice_session_create() {
+    public function test_qpractice_session_create(): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
@@ -68,25 +68,23 @@ class mod_qpractice_lib_test extends advanced_testcase {
         $this->qp->instanceid = qpractice_add_instance($this->qp);
         $sessionid = qpractice_session_create($this->qp, $context);
         $this->assertInternalType("int", $sessionid);
-
     }
     /**
      * Create an instance on a course then delete it.
      * Check that the instance really was deleted.
      */
-    public function test_qpractice_delete_instance() {
+    public function test_qpractice_delete_instance(): void {
         global $SITE, $DB;
         $this->resetAfterTest(true);
         $this->setAdminUser();
         // Setup a qpractice instance.
         $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
-        $qpractice = $qpracticegenerator->create_instance(array('course' => $SITE->id));
+        $qpractice = $qpracticegenerator->create_instance(['course' => $SITE->id]);
         qpractice_delete_instance($qpractice->id);
 
         // Check that the qpractice was removed.
-        $count = $DB->count_records('qpractice', array('id' => $qpractice->id));
+        $count = $DB->count_records('qpractice', ['id' => $qpractice->id]);
         $this->assertEquals(0, $count);
-
     }
     /**
      * initialise globally available object for user
@@ -97,8 +95,8 @@ class mod_qpractice_lib_test extends advanced_testcase {
     public function setup() {
         global $SITE;
         $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
-        $qpractice = $qpracticegenerator->create_instance(array('course' => $SITE->id));
-        $this->qp = new stdClass;
+        $qpractice = $qpracticegenerator->create_instance(['course' => $SITE->id]);
+        $this->qp = new stdClass();
         $this->qp->name = 'QP1';
         $this->qp->topcategory = 62;
         $this->qp->visible = 1;
@@ -111,5 +109,4 @@ class mod_qpractice_lib_test extends advanced_testcase {
 
         $this->qp->coursemodule = $qpractice->cmid;
     }
-
 }

@@ -33,10 +33,10 @@ if ($cmid) {
     if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $cmid);
     }
-    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+    if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
         throw new \moodle_exception('coursemisconf');
     }
-    $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+    $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 }
 
 require_login($course, true, $cm);
@@ -48,24 +48,24 @@ $report = \core_reportbuilder\system_report_factory::create(
     $context
 );
 
-$backurl = new moodle_url('/mod/qpractice/view.php', array('id' => $sessionid));
+$backurl = new moodle_url('/mod/qpractice/view.php', ['id' => $sessionid]);
 $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
 $PAGE->set_url('/mod/qpractice/report_by_category.php');
 
 echo $OUTPUT->header();
-//echo $report->output();
+// echo $report->output();
 $t = new html_table();
 xdebug_break();
-$t->head = array(get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice'));
+$t->head = [get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice')];
 $t->data = $categories;
-//echo html_writer::table($t);
-$columns =[
+// echo html_writer::table($t);
+$columns = [
     'category_name' => 'category_name',
     'marksobtained' => get_string('marksobtained', 'qpractice'),
     'categorytotal' => get_string('totalmarks', 'qpractice'),
 ];
-$headers =[
+$headers = [
     get_string('category', 'qpractice'),
     'Question count',
      'Sum of marks',
@@ -73,12 +73,12 @@ $headers =[
 
 $table = new flexible_table('questioncategories');
 $table->sortable(true, 'category_name', SORT_ASC);
-$table->set_control_variables(array(
+$table->set_control_variables([
     TABLE_VAR_SORT    => 'ssort',
     TABLE_VAR_IFIRST  => 'sifirst',
     TABLE_VAR_ILAST   => 'silast',
-    TABLE_VAR_PAGE    => 'spage'
-    ));
+    TABLE_VAR_PAGE    => 'spage',
+    ]);
 
 $table->no_sorting('select');
 $table->no_sorting('status');
@@ -118,19 +118,19 @@ $sql = "SELECT distinct qcats.id, qcats.name as category_name, session.totalmark
         JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
         JOIN {question_categories} qcats ON sessioncats.category = qcats.id
         WHERE session.id = :sessionid ";
-        $sql .= ' ORDER BY '.$sort;
+        $sql .= ' ORDER BY ' . $sort;
 
 $categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
 
-foreach($categories as $category) {
+foreach ($categories as $category) {
         $categorytotal = 0;
         $questioncount = 0;
-        foreach ($qusage as $q) {
-            if($q->categoryid  == $category->id) {
-                $categorytotal += $q->fraction;
-                $questioncount ++;
-            }
+    foreach ($qusage as $q) {
+        if ($q->categoryid == $category->id) {
+            $categorytotal += $q->fraction;
+            $questioncount++;
         }
+    }
         $category->questioncount = $questioncount;
         $category->marksobtained = $categorytotal;
 }
@@ -146,14 +146,14 @@ $table->finish_output();
 
 // echo '<table>';
 // foreach ($categories as $category) {
-//     echo '<tr><td>';
-//     echo $category->category_name;
-//     echo '</td><td>';
-//     echo $category->marksobtained;
-//     echo '</td><td>';
-//     echo $category->totalmarks;
-//     echo '</td>';
-//     echo '</tr>';
+// echo '<tr><td>';
+// echo $category->category_name;
+// echo '</td><td>';
+// echo $category->marksobtained;
+// echo '</td><td>';
+// echo $category->totalmarks;
+// echo '</td>';
+// echo '</tr>';
 // }
 // echo '</table>';
 echo $OUTPUT->footer();

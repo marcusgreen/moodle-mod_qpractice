@@ -50,8 +50,7 @@ class qpractice_finished extends \core\event\base {
      *
      * @return string
      */
-    public function get_description() : string {
+    public function get_description(): string {
         return "On course: {$this->courseid} qpracticeid: {$this->objectid} was attempted";
     }
-
 }

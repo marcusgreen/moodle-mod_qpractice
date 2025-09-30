@@ -31,8 +31,7 @@ use core_reportbuilder\local\filters\date;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class session_categories extends base {
-
-   /**
+    /**
      * Database tables that this entity uses
      *
      * @return string[]
@@ -93,7 +92,7 @@ class session_categories extends base {
      *
      * @return array
      */
-    public function get_all_filters() : array {
+    public function get_all_filters(): array {
         $filters = [];
         return $filters;
     }

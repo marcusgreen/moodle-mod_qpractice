@@ -26,7 +26,7 @@
  */
 defined('MOODLE_INTERNAL') || die();
 // Might need this
-//    $categories = get_categories_for_contexts($contextslist, 'parent, sortorder, name ASC', $top);
+// $categories = get_categories_for_contexts($contextslist, 'parent, sortorder, name ASC', $top);
 
 /**
  * Consider for deletion.
@@ -41,7 +41,7 @@ function qpractice_make_default_categories($context) {
     }
 
     // Create default question categories.
-    $defaultcategoryobj = question_make_default_categories(array($context));
+    $defaultcategoryobj = question_make_default_categories([$context]);
 
     return $defaultcategoryobj;
 }
@@ -59,7 +59,7 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-function qpractice_get_question_categories(\context $context, $mform, int $top=null, array $categories=null) : array {
+function qpractice_get_question_categories(\context $context, $mform, int $top = null, array $categories = null): array {
     global $DB;
     if (empty($context)) {
         return '';
@@ -87,7 +87,7 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
         $catarray[$category->id] = $category->id;
     }
     $top = 0;
-    if (count($catarray) > 0 ) {
+    if (count($catarray) > 0) {
         $top = min($catarray);
     }
 
@@ -96,7 +96,7 @@ function qpractice_get_question_categories(\context $context, $mform, int $top=n
     $ct->buildtree($mform, $contextcategories, $top - 1);
 
     $ct->html = '<div id="fgroup_id_categories101" class="form-group row  fitem femptylabel  " data-groupname="mavg">
-    '.$ct->html;
+    ' . $ct->html;
     $ct->html .= '</div>';
     return [$contextcategories, $ct->html];
 }
@@ -112,15 +112,15 @@ class catTree {
      * @param integer $parentid
      * @return void
      */
-    public function buildtree(\MoodleQuickForm $mform, array $elements, int  $parentid = 0) {
+    public function buildtree(\MoodleQuickForm $mform, array $elements, int $parentid = 0) {
         $this->html .= "<ul>";
         foreach ($elements as $element) {
             if ($element->parent === (string) $parentid) {
                 $this->html .= '<li class="category_list_item">';
-                $questioncount = '<span class="question_count">('.$element->questioncount.')</span>';
-                $id = 'categories['.$element->id.']_parent['.$element->parent.']';
+                $questioncount = '<span class="question_count">(' . $element->questioncount . ')</span>';
+                $id = 'categories[' . $element->id . ']_parent[' . $element->parent . ']';
                 $checked = ($element->checked) ? "checked" : "";
-                $this->html .= $mform->createElement('checkbox', $id, '', $element->name, ['class' => 'question_category', $checked, 'group' => 1])->toHtml().$questioncount;
+                $this->html .= $mform->createElement('checkbox', $id, '', $element->name, ['class' => 'question_category', $checked, 'group' => 1])->toHtml() . $questioncount;
                 $children = $this->buildTree($mform, $elements, $element->id);
                 if ($children) {
                     $element->children = $children;
@@ -132,7 +132,6 @@ class catTree {
         }
         $this->html .= "</ul>";
     }
-
 }
 
 /**
@@ -142,7 +141,7 @@ class catTree {
  * @param \context $context the quiz object.
  * @return integer
  */
-function qpractice_session_create(stdClass $fromform, \context $context) : int {
+function qpractice_session_create(stdClass $fromform, \context $context): int {
     global $DB, $USER;
     $qpractice = new stdClass();
      /* $value = $fromform->optiontype;
@@ -169,7 +168,6 @@ function qpractice_session_create(stdClass $fromform, \context $context) : int {
     $qpractice->userid = $USER->id;
     $quba->set_preferred_behaviour($behaviour);
     $qpractice->qpracticeid = $fromform->instanceid;
-
 
     /* The next block of code replaces
      * question_engine::save_questions_usage_by_activity($quba);
@@ -201,13 +199,13 @@ function qpractice_delete_attempt(int $sessionid) {
     global $DB;
 
     if (is_numeric($sessionid)) {
-        if (!$session = $DB->get_record('qpractice_session', array('id' => $sessionid))) {
+        if (!$session = $DB->get_record('qpractice_session', ['id' => $sessionid])) {
             return;
         }
     }
 
     question_engine::delete_questions_usage_by_activity($session->questionusageid);
-    $DB->delete_records('qpractice_session', array('id' => $session->id));
+    $DB->delete_records('qpractice_session', ['id' => $session->id]);
 }
 
 /**
@@ -216,7 +214,7 @@ function qpractice_delete_attempt(int $sessionid) {
  * @param int $categoryid
  * @return array
  */
-function get_available_questions_from_categories(array $categories) : array {
+function get_available_questions_from_categories(array $categories): array {
     /**@todo not implemented ? */
     $excludedqtypes = null;
     $questionids = question_bank::get_finder()->get_questions_from_categories($categories, $excludedqtypes);
@@ -254,9 +252,9 @@ function choose_other_question(array $categories, array $excludedquestions, bool
  * @param stdClass $cm
  * @return array
  */
-function get_options_behaviour(stdClass $cm) : array {
+function get_options_behaviour(stdClass $cm): array {
     global $DB, $CFG;
-    $behaviour = $DB->get_record('qpractice', array('id' => $cm->instance), 'behaviour');
+    $behaviour = $DB->get_record('qpractice', ['id' => $cm->instance], 'behaviour');
     $comma = explode(",", $behaviour->behaviour);
     $currentbehaviour = '';
     $behaviours = question_engine::get_behaviour_options($currentbehaviour);
@@ -277,19 +275,23 @@ function get_options_behaviour(stdClass $cm) : array {
  * @param question_usage_by_activity $quba
  * @return integer
  */
-function get_next_question(int $sessionid, question_usage_by_activity $quba) : int {
+function get_next_question(int $sessionid, question_usage_by_activity $quba): int {
 
     global $DB;
 
     $session = $DB->get_record('qpractice_session', ['id' => $sessionid]);
     $categories = $DB->get_records('qpractice_session_cats', ['session' => $sessionid], '', 'category');
-    $results = $DB->get_records_menu('question_attempts', array('questionusageid' => $session->questionusageid),
-            'id', 'id, questionid');
+    $results = $DB->get_records_menu(
+        'question_attempts',
+        ['questionusageid' => $session->questionusageid],
+        'id',
+        'id, questionid'
+    );
     $categories = $DB->get_records_menu('qpractice_session_cats', ['session' => $sessionid], '', 'id, category');
     $questionid = choose_other_question($categories, $results);
 
     if ($questionid == null) {
-        $viewurl = new moodle_url('/mod/qpractice/summary.php', array('id' => $sessionid));
+        $viewurl = new moodle_url('/mod/qpractice/summary.php', ['id' => $sessionid]);
         redirect($viewurl, get_string('nomorequestions', 'qpractice'));
     }
 
@@ -297,6 +299,6 @@ function get_next_question(int $sessionid, question_usage_by_activity $quba) : i
     $slot = $quba->add_question($question);
     $quba->start_question($slot);
     question_engine::save_questions_usage_by_activity($quba);
-    $DB->set_field('qpractice_session', 'totalnoofquestions', $slot, array('id' => $sessionid));
+    $DB->set_field('qpractice_session', 'totalnoofquestions', $slot, ['id' => $sessionid]);
     return $slot;
 }

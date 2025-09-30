@@ -31,7 +31,7 @@ require_once($CFG->libdir . '/questionlib.php');
 
 $id = required_param('id', PARAM_INT); // Course_module ID.
 
-$PAGE->set_url('/mod/qpractice/startattempt.php', array('id' => $id));
+$PAGE->set_url('/mod/qpractice/startattempt.php', ['id' => $id]);
 $DB->set_field('qpractice_session', 'status', 'finished', null);
 
 xdebug_break();
@@ -39,10 +39,10 @@ if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
     }
-    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+    if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
         throw new moodle_exception('coursemisconf', 'error', '', $$cm->course);
     }
-    $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+    $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 
     $sql = "SELECT qpcat.id, qpcat.categoryid,qcat.name FROM {qpractice_categories} qpcat
             JOIN {question_categories} qcat
@@ -50,7 +50,6 @@ if ($id) {
             WHERE qpcat.qpracticeid = :qpracticeid";
 
     $categories = $DB->get_records_sql($sql, ['qpracticeid' => $qpractice->id]);
-
 }
 
 require_login($course, true, $cm);
@@ -59,12 +58,12 @@ global $PAGE;
 $context = context_module::instance($cm->id);
 $coursecontext = $context->get_course_context();
 /** mavg */
-//$categorytree = qpractice_get_question_categories($coursecontext, null, null, $categories);
+// $categorytree = qpractice_get_question_categories($coursecontext, null, null, $categories);
 
 // $categories = get_category_table($categories);
 $behaviours = get_options_behaviour($cm);
 
-$data = array();
+$data = [];
 $data['categories'] = $categories;
 $data['behaviours'] = $behaviours;
 $data['instanceid'] = $cm->instance;
@@ -72,17 +71,17 @@ $data['instanceid'] = $cm->instance;
 $mform = new mod_qpractice_startattempt_form(null, $data);
 
 if ($mform->is_cancelled()) {
-    $returnurl = new moodle_url('/mod/qpractice/view.php', array('id' => $cm->id));
+    $returnurl = new moodle_url('/mod/qpractice/view.php', ['id' => $cm->id]);
     redirect($returnurl);
 } else if ($fromform = $mform->get_data()) {
     $sessionid = qpractice_session_create($fromform, $context);
-    $nexturl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $sessionid));
+    $nexturl = new moodle_url('/mod/qpractice/attempt.php', ['id' => $sessionid]);
     redirect($nexturl);
 }
 
-$mform->set_data(array(
+$mform->set_data([
     'id' => $cm->id,
-));
+]);
 
 // Print the page header.
 $PAGE->set_title(format_string($qpractice->name));

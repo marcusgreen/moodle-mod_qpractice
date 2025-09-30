@@ -33,10 +33,10 @@ if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
     }
-    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+    if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
         throw new moodle_exception('coursemisconf', 'error', '', $cm->course);
     }
-    $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+    $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 }
 
 require_login($course, true, $cm);
@@ -45,10 +45,10 @@ $context = context_module::instance($cm->id);
 
 require_capability('mod/qpractice:view', $context);
 
-$params = array(
+$params = [
     'objectid' => $cm->id,
-    'context' => $context
-);
+    'context' => $context,
+];
 $event = mod_qpractice\event\qpractice_viewed::create($params);
 $event->trigger();
 xdebug_break();
@@ -60,9 +60,9 @@ $PAGE->set_context($context);
 
 $canview = has_capability('mod/qpractice:view', $context);
 
-$createurl = new moodle_url('/mod/qpractice/startattempt.php', array('id' => $cm->id));
+$createurl = new moodle_url('/mod/qpractice/startattempt.php', ['id' => $cm->id]);
 $createtext = get_string('createurl', 'qpractice');
-$reporturl = new moodle_url('/mod/qpractice/report.php', array('id' => $cm->id));
+$reporturl = new moodle_url('/mod/qpractice/report.php', ['id' => $cm->id]);
 $reporttext = get_string('reporturl', 'qpractice');
 
 echo $OUTPUT->header();
@@ -71,8 +71,10 @@ if ($canview) {
     echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
     echo $OUTPUT->single_button($createurl, $createtext, 'get', ['class' => 'btn text-left col-sm-3 ']);
 
-    if ($qpractice = $DB->get_records('qpractice_session', array('userid' => $USER->id,
-        'qpracticeid' => $cm->instance), 'id desc', '*', '0', '1')) {
+    if (
+        $qpractice = $DB->get_records('qpractice_session', ['userid' => $USER->id,
+        'qpracticeid' => $cm->instance], 'id desc', '*', '0', '1')
+    ) {
         $qpractice = array_values($qpractice);
 
         // echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
@@ -80,13 +82,12 @@ if ($canview) {
         // echo html_writer::end_tag('div');
 
         if ($qpractice[0]->status == 'inprogress') {
-            $continueurl = new moodle_url('/mod/qpractice/attempt.php', array('id' => $qpractice[0]->id));
+            $continueurl = new moodle_url('/mod/qpractice/attempt.php', ['id' => $qpractice[0]->id]);
             $continuetext = get_string('continueurl', 'qpractice');
             echo html_writer::link($continueurl, $continuetext);
         }
     }
     echo html_writer::end_tag('div');
-
 } else {
     throw new moodle_exception(get_string('nopermission', 'qpractice'));
 }

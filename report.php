@@ -29,29 +29,28 @@ $cmid = required_param('id', PARAM_INT); // Course-Module id.
 if ($cmid) {
     if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $cmid);
-
     }
-    if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
+    if (!$course = $DB->get_record('course', ['id' => $cm->course])) {
         throw new \moodle_exception('coursemisconf');
     }
-    $qpractice = $DB->get_record('qpractice', array('id' => $cm->instance));
+    $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 }
 
 require_login($course, true, $cm);
 
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__) . '/lib.php');
 
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/mod/qpractice/report.php', ['id' => $cm->id]));
 $params = [
     'objectid' => $cm->id,
-    'context' => $context
+    'context' => $context,
 ];
 $event = \mod_qpractice\event\qpractice_report_viewed::create($params);
 $event->trigger();
 
-$backurl = new moodle_url('/mod/qpractice/view.php', array('id' => $cm->id));
+$backurl = new moodle_url('/mod/qpractice/view.php', ['id' => $cm->id]);
 $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
 

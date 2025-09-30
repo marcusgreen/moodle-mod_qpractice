@@ -34,7 +34,6 @@
  */
 
 class backup_qpractice_activity_structure_step extends backup_questions_activity_structure_step {
-
     /**
      * Set the table structure up for converting to xml
      *
@@ -46,17 +45,17 @@ class backup_qpractice_activity_structure_step extends backup_questions_activity
         $userinfo = $this->get_setting_value('userinfo');
 
         // Define each element separated.
-        $qpractice = new backup_nested_element('qpractice', array('id'), array(
+        $qpractice = new backup_nested_element('qpractice', ['id'], [
             'name', 'intro', 'introformat', 'topcategory', 'behaviour', 'timecreated',
-            'timemodified'));
+            'timemodified']);
 
         $sessions = new backup_nested_element('sessions');
 
-        $session = new backup_nested_element('session', array('id'), array(
+        $session = new backup_nested_element('session', ['id'], [
                 'qpracticeid', 'questionusageid', 'userid', 'categoryid',
                 'typeofpractice', 'time', 'goalpercentage', 'noofquestions',
                 'practicedate', 'status', 'totalnoofquestions', 'totalnoofquestionsright',
-                'marksobtained', 'totalmarks'));
+                'marksobtained', 'totalmarks']);
 
         $this->add_question_usages($session, 'questionusageid');
 
@@ -66,11 +65,13 @@ class backup_qpractice_activity_structure_step extends backup_questions_activity
         $sessions->add_child($session);
 
          // Define sources.
-        $qpractice->set_source_table('qpractice', array('id' => backup::VAR_ACTIVITYID));
+        $qpractice->set_source_table('qpractice', ['id' => backup::VAR_ACTIVITYID]);
 
         if ($userinfo) {
-               $session->set_source_table('qpractice_session',
-                         array('qpracticeid' => backup::VAR_PARENTID));
+               $session->set_source_table(
+                   'qpractice_session',
+                   ['qpracticeid' => backup::VAR_PARENTID]
+               );
         }
 
         // Define id annotations.

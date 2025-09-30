@@ -40,7 +40,7 @@ class restore_qpractice_activity_structure_step extends restore_questions_activi
      */
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $qpractice = new restore_path_element('qpractice', '/activity/qpractice');

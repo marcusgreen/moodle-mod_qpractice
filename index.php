@@ -23,8 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/lib.php');
 
 require_login();
 
@@ -37,8 +37,8 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading('mod_qpractice');
 
 $report = \core_reportbuilder\system_report_factory::create(
-       \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
-       context_course::instance($courseid)
+    \mod_qpractice\reportbuilder\local\systemreports\qpractice_sessions_report::class,
+    context_course::instance($courseid)
 );
 
 echo $report->output();

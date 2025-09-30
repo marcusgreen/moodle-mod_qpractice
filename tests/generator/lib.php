@@ -31,7 +31,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_qpractice_generator extends testing_module_generator {
-
     /**
      * create an instance
      *
@@ -41,15 +40,15 @@ class mod_qpractice_generator extends testing_module_generator {
      */
     public function create_instance($record = null, array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/mod/qpractice/locallib.php');
+        require_once($CFG->dirroot . '/mod/qpractice/locallib.php');
         $record = (object)(array)$record;
-        $defaultquizsettings = array(
+        $defaultquizsettings = [
             'questionusageid'         => 0,
             'name'                    => 'QpracticeTest',
             'intro      '             => '',
             'introformat'             => 1,
-            'behaviour'               => array('interactive'),
-             );
+            'behaviour'               => ['interactive'],
+             ];
         foreach ($defaultquizsettings as $name => $value) {
             if (!isset($record->{$name})) {
                 $record->{$name} = $value;

@@ -73,7 +73,7 @@ function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mfo
     $qpractice->behaviour = $comma;
 
     $qpractice->id = $DB->insert_record('qpractice', $qpractice);
-    $categories = optional_param_array('categories', '', PARAM_INT );
+    $categories = optional_param_array('categories', '', PARAM_INT);
     $qpractice->categories = $categories;
 
     upsert_categories($qpractice);
@@ -88,10 +88,10 @@ function upsert_categories(stdClass $qpractice) {
     $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->coursemodule]);
     $recordstoinsert = [];
     foreach ($qpractice->categories as $categoryid => $checked) {
-        if($checked > 0) {
+        if ($checked > 0) {
             $recordstoinsert[] = (object) [
                 'qpracticeid' => $qpractice->id,
-                'categoryid' => $categoryid
+                'categoryid' => $categoryid,
             ];
         }
     }
@@ -113,7 +113,6 @@ function upsert_categories(stdClass $qpractice) {
 function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
     global $DB;
     // $qpractice->categories = optional_param_array('categories', null, PARAM_INT);
-
 
     $qpractice->timemodified = time();
     $qpractice->id = $qpractice->instance;
@@ -143,11 +142,11 @@ function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $
 function qpractice_delete_instance($id) {
     global $DB;
 
-    if (!$qpractice = $DB->get_record('qpractice', array('id' => $id))) {
+    if (!$qpractice = $DB->get_record('qpractice', ['id' => $id])) {
         return false;
     }
 
-    $DB->delete_records('qpractice', array('id' => $qpractice->id));
+    $DB->delete_records('qpractice', ['id' => $qpractice->id]);
 
     return true;
 }
@@ -163,9 +162,9 @@ function qpractice_after_add_or_update($qpractice) {
     $cmid = $qpractice->coursemodule;
 
     // We need to use context now, so we need to make sure all needed info is already in db.
-    $DB->set_field('course_modules', 'instance', $qpractice->id, array('id' => $cmid));
+    $DB->set_field('course_modules', 'instance', $qpractice->id, ['id' => $cmid]);
     $context = context_module::instance($cmid);
-    $contexts = array($context);
+    $contexts = [$context];
     question_make_default_categories($contexts);
 }
 
@@ -238,7 +237,6 @@ function qpractice_print_recent_activity(int $course, bool $viewfullnames, int $
  * @return void adds items into $activities and increases $index
  */
 function qpractice_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
-
 }
 
 
@@ -280,7 +278,7 @@ function qpractice_grade_item_update(stdClass $qpractice) {
     global $CFG;
     require_once($CFG->libdir . '/gradelib.php');
 
-    $item = array();
+    $item = [];
     $item['itemname'] = clean_param($qpractice->name, PARAM_NOTAGS);
     $item['gradetype'] = GRADE_TYPE_VALUE;
     $item['grademax'] = $qpractice->grade;
@@ -302,7 +300,7 @@ function qpractice_update_grades(stdClass $qpractice, $userid = 0) {
     global $CFG, $DB;
     require_once($CFG->libdir . '/gradelib.php');
 
-    $grades = array(); // Populate array of grade objects indexed by userid.
+    $grades = []; // Populate array of grade objects indexed by userid.
 
     grade_update('mod/qpractice', $qpractice->course, 'mod', 'qpractice', $qpractice->id, 0, $grades);
 }
@@ -319,7 +317,7 @@ function qpractice_update_grades(stdClass $qpractice, $userid = 0) {
  * @return array of [(string)filearea] => (string)description
  */
 function qpractice_get_file_areas($course, $cm, $context) {
-    return array();
+    return [];
 }
 
 /**
@@ -357,7 +355,7 @@ function qpractice_get_file_info($browser, $areas, $course, $cm, $context, $file
  * @param bool $forcedownload whether or not force download
  * @param array $options additional options affecting the file serving
  */
-function qpractice_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options = array()) {
+function qpractice_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options = []) {
     global $DB, $CFG;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -383,8 +381,17 @@ function qpractice_pluginfile($course, $cm, $context, $filearea, array $args, $f
  * @param array $options
  * @return void
  */
-function qpractice_question_pluginfile(int $course, \context $context, int $component, int $filearea,
-    int $qubaid, int $slot, array $args, $forcedownload, array $options = array()) {
+function qpractice_question_pluginfile(
+    int $course,
+    \context $context,
+    int $component,
+    int $filearea,
+    int $qubaid,
+    int $slot,
+    array $args,
+    $forcedownload,
+    array $options = []
+) {
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/$component/$filearea/$relativepath";
@@ -421,5 +428,4 @@ function qpractice_extend_settings_navigation(settings_navigation $settingsnav, 
     global $PAGE, $CFG;
     require_once($CFG->libdir . '/questionlib.php');
     question_extend_settings_navigation($qpracticenode, $PAGE->cm->context)->trim_if_empty();
-
 }

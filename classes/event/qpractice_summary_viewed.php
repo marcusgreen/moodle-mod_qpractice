@@ -53,8 +53,8 @@ class qpractice_summary_viewed extends \core\event\base {
      *
      * @return \moodle_url
      */
-    public function get_url() :\moodle_url {
-        return new \moodle_url('/mod/qpractice/summary.php', array('id' => $this->objectid));
+    public function get_url(): \moodle_url {
+        return new \moodle_url('/mod/qpractice/summary.php', ['id' => $this->objectid]);
     }
 
     /**
@@ -65,5 +65,4 @@ class qpractice_summary_viewed extends \core\event\base {
     public function get_description(): string {
         return "The user with id {$this->userid} viewed the summary for qpractice id :  {$this->objectid}.";
     }
-
 }

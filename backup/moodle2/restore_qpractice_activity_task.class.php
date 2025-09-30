@@ -39,7 +39,6 @@ require_once($CFG->dirroot . '/mod/qpractice/backup/moodle2/restore_qpractice_st
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class restore_qpractice_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -60,9 +59,9 @@ class restore_qpractice_activity_task extends restore_activity_task {
      * processed by the link decoder
      */
     public static function define_decode_contents() {
-        $contents = array();
+        $contents = [];
 
-        $contents[] = new restore_decode_content('qpractice', array('intro'), 'qpractice');
+        $contents[] = new restore_decode_content('qpractice', ['intro'], 'qpractice');
 
         return $contents;
     }
@@ -72,17 +71,25 @@ class restore_qpractice_activity_task extends restore_activity_task {
      * to the activity to be executed by the link decoder
      */
     public static function define_decode_rules() {
-        $rules = array();
+        $rules = [];
 
-        $rules[] = new restore_decode_rule('QPRACTICEVIEWBYID',
-                '/mod/qpractice/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('QPRACTICEVIEWBYQ',
-                '/mod/qpractice/view.php?q=$1', 'qpractice');
-        $rules[] = new restore_decode_rule('QPRACTICEINDEX',
-                '/mod/qpractice/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule(
+            'QPRACTICEVIEWBYID',
+            '/mod/qpractice/view.php?id=$1',
+            'course_module'
+        );
+        $rules[] = new restore_decode_rule(
+            'QPRACTICEVIEWBYQ',
+            '/mod/qpractice/view.php?q=$1',
+            'qpractice'
+        );
+        $rules[] = new restore_decode_rule(
+            'QPRACTICEINDEX',
+            '/mod/qpractice/index.php?id=$1',
+            'course'
+        );
 
         return $rules;
-
     }
 
     /**
@@ -92,7 +99,7 @@ class restore_qpractice_activity_task extends restore_activity_task {
      * of {@link restore_log_rule} objects
      */
     public static function define_restore_log_rules() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_log_rule('qpractice', 'view', 'view.php?id={course_module}', '{qpractice}');
         $rules[] = new restore_log_rule('qpractice', 'attempt', 'report.php?id={course_module}', '{qpractice}');
@@ -115,7 +122,7 @@ class restore_qpractice_activity_task extends restore_activity_task {
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
     public static function define_restore_log_rules_for_course() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_log_rule('qpractice', 'view all', 'index.php?id={course}', null);
 

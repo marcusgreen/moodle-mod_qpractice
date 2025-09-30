@@ -34,7 +34,6 @@ namespace mod_qpractice\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 class qpractice_attempted extends \core\event\base {
-
     /** initialisation */
     protected function init() {
         $this->data['crud'] = 'r';
@@ -56,7 +55,6 @@ class qpractice_attempted extends \core\event\base {
      * @return string
      */
     public function get_url(): \moodle_url {
-        return new \moodle_url('/mod/qpractice/view.php', array('id' => $this->objectid));
+        return new \moodle_url('/mod/qpractice/view.php', ['id' => $this->objectid]);
     }
-
 }

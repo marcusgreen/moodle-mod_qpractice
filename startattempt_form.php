@@ -55,7 +55,7 @@ class mod_qpractice_startattempt_form extends moodleform {
             foreach ($categories as $category) {
                 $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
             }
-            $mform->addGroup($cbx, 'categories',  get_string('category'));
+            $mform->addGroup($cbx, 'categories', get_string('category'));
         } else {
             $category = reset($categories);
             $mform->addElement('static', 'category', get_string('category'), $category->name);
@@ -95,5 +95,4 @@ class mod_qpractice_startattempt_form extends moodleform {
             return true;
         }
     }
-
 }

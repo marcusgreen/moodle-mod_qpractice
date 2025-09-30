@@ -30,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_qpractice_renderer extends plugin_renderer_base {
-
     /**
      * shown at the end of a session
      *
@@ -40,15 +39,15 @@ class mod_qpractice_renderer extends plugin_renderer_base {
     public function summary_table(int $sessionid) {
         global $DB;
 
-        $session = $DB->get_record('qpractice_session', array('id' => $sessionid));
+        $session = $DB->get_record('qpractice_session', ['id' => $sessionid]);
         $table = new html_table();
         $table->attributes['class'] = 'generaltable qpracticesummaryofattempt boxaligncenter';
         $table->caption = get_string('pastsessions', 'qpractice');
-        $table->head = array(get_string('totalquestions', 'qpractice'), get_string('totalmarks', 'qpractice'));
-        $table->align = array('left', 'left');
-        $table->size = array('', '');
-        $table->data = array();
-        $table->data[] = array($session->totalnoofquestions, $session->marksobtained . '/' . $session->totalmarks);
+        $table->head = [get_string('totalquestions', 'qpractice'), get_string('totalmarks', 'qpractice')];
+        $table->align = ['left', 'left'];
+        $table->size = ['', ''];
+        $table->data = [];
+        $table->data[] = [$session->totalnoofquestions, $session->marksobtained . '/' . $session->totalmarks];
         echo html_writer::table($table);
     }
 
@@ -60,7 +59,7 @@ class mod_qpractice_renderer extends plugin_renderer_base {
      * @return void
      */
     public function summary_form(int $sessionid) {
-        $actionurl = new moodle_url('/mod/qpractice/summary.php', array('id' => $sessionid));
+        $actionurl = new moodle_url('/mod/qpractice/summary.php', ['id' => $sessionid]);
         $output = '';
         $output .= html_writer::start_tag('form', [
             'method' => 'post',
@@ -68,23 +67,23 @@ class mod_qpractice_renderer extends plugin_renderer_base {
             'enctype' => 'multipart/form-data',
             'id' => 'responseform',
             'class' => 'qpractice']);
-        $output .= html_writer::start_tag('div', array('align' => 'center'));
-        $output .= html_writer::empty_tag('input',
-                    [
+        $output .= html_writer::start_tag('div', ['align' => 'center']);
+        $output .= html_writer::empty_tag(
+            'input',
+            [
                     'type' => 'submit',
                     'class' => 'qpbtn submit',
                     'name' => 'back',
-                    'value' => get_string('resumepractice', 'qpractice')
+                    'value' => get_string('resumepractice', 'qpractice'),
                     ]
-                );
+        );
         $output .= html_writer::empty_tag('br');
         $output .= html_writer::empty_tag('br');
         $output .= html_writer::empty_tag('input', [
                     'type' => 'submit',
                     'name' => 'finish',
                     'class' => 'qpbtn submit',
-                    'value' => get_string('submitandfinish', 'qpractice')]
-                );
+                    'value' => get_string('submitandfinish', 'qpractice')]);
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('form');
 
@@ -106,41 +105,40 @@ class mod_qpractice_renderer extends plugin_renderer_base {
         $canviewmyreports = has_capability('mod/qpractice:viewmyreport', $context);
 
         if ($canviewmyreports) {
-            $session = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance, 'userid' => $USER->id));
+            $session = $DB->get_records('qpractice_session', ['qpracticeid' => $cm->instance, 'userid' => $USER->id]);
         } if ($canviewallreports) {
-            $session = $DB->get_records('qpractice_session', array('qpracticeid' => $cm->instance));
+            $session = $DB->get_records('qpractice_session', ['qpracticeid' => $cm->instance]);
         }
 
         if ($session != null) {
             $table = new html_table();
             $table->attributes['class'] = 'generaltable qpracticesummaryofpractices boxaligncenter';
             $table->caption = get_string('pastsessions', 'qpractice');
-            $table->head = array(get_string('practicedate', 'qpractice'), get_string('category', 'qpractice'),
+            $table->head = [get_string('practicedate', 'qpractice'), get_string('category', 'qpractice'),
                 get_string('score', 'qpractice'),
                 get_string('noofquestionsviewed', 'qpractice'),
-                get_string('noofquestionsright', 'qpractice'));
-            $table->align = array('left', 'left', 'left', 'left', 'left', 'left', 'left');
-            $table->size = array('', '', '', '', '', '', '', '');
-            $table->data = array();
+                get_string('noofquestionsright', 'qpractice')];
+            $table->align = ['left', 'left', 'left', 'left', 'left', 'left', 'left'];
+            $table->size = ['', '', '', '', '', '', '', ''];
+            $table->data = [];
             foreach ($session as $qpractice) {
                 $date = $qpractice->practicedate;
                 $categoryid = $qpractice->categoryid;
 
-                $category = $DB->get_records_menu('question_categories', array('id' => $categoryid), 'name');
+                $category = $DB->get_records_menu('question_categories', ['id' => $categoryid], 'name');
                 /* If the category has been deleted, jump to the next session */
                 if (empty($category)) {
                     continue;
                 }
-                $table->data[] = array(userdate($date), $category[$categoryid],
+                $table->data[] = [userdate($date), $category[$categoryid],
                     $qpractice->marksobtained . '/' . $qpractice->totalmarks,
-                    $qpractice->totalnoofquestions, $qpractice->totalnoofquestionsright);
+                    $qpractice->totalnoofquestions, $qpractice->totalnoofquestionsright];
             }
             echo html_writer::table($table);
         } else {
-            $viewurl = new moodle_url('/mod/qpractice/view.php', array('id' => $cm->id));
+            $viewurl = new moodle_url('/mod/qpractice/view.php', ['id' => $cm->id]);
             $viewtext = get_string('viewurl', 'qpractice');
             redirect($viewurl, $viewtext);
         }
     }
-
 }

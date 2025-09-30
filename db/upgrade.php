@@ -43,7 +43,6 @@ function xmldb_qpractice_upgrade($oldversion) {
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
     if ($oldversion < 2019031900) {
-
         // Define field topcategory to be added to qpractice.
         $table = new xmldb_table('qpractice');
         $field = new xmldb_field('topcategory', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'intro');
