@@ -21,6 +21,7 @@
  * @copyright  2013 Jayesh Anandani
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 global $CFG, $USER;
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
@@ -28,7 +29,6 @@ require_once("$CFG->libdir/formslib.php");
 
 $id = optional_param('id', 0, PARAM_INT); // Course_module ID.
 $n = optional_param('n', 0, PARAM_INT);  // Qpractice instance ID - it should be named as the first character of the module.
-
 if ($id) {
     if (!$cm = get_coursemodule_from_id('qpractice', $id)) {
         throw new moodle_exception('invalidcoursemoduleid', 'error', '', $id);
@@ -77,9 +77,7 @@ if ($canview) {
     ) {
         $qpractice = array_values($qpractice);
 
-        // echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
         echo $OUTPUT->single_button($reporturl, $reporttext, 'get', ['class' => 'btn  text-left col-sm-4']);
-        // echo html_writer::end_tag('div');
 
         if ($qpractice[0]->status == 'inprogress') {
             $continueurl = new moodle_url('/mod/qpractice/attempt.php', ['id' => $qpractice[0]->id]);

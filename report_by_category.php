@@ -54,12 +54,9 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_url('/mod/qpractice/report_by_category.php');
 
 echo $OUTPUT->header();
-// echo $report->output();
 $t = new html_table();
-xdebug_break();
 $t->head = [get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice')];
 $t->data = $categories;
-// echo html_writer::table($t);
 $columns = [
     'category_name' => 'category_name',
     'marksobtained' => get_string('marksobtained', 'qpractice'),
@@ -98,7 +95,6 @@ if ($table->get_sql_sort()) {
 }
 
 
-
 $sql = "SELECT qa.questionid,qa.maxmark, qas.fraction, qbe.questioncategoryid as categoryid FROM {question_usages} qu
         JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
         JOIN {qpractice_session} session ON session.questionusageid = qu.id
@@ -108,7 +104,6 @@ $sql = "SELECT qa.questionid,qa.maxmark, qas.fraction, qbe.questioncategoryid as
         WHERE qu.contextid = :contextid
         AND qas.fraction IS NOT NULL
         AND session.id = :sessionid";
-xdebug_break();
 $qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
 
 
@@ -142,19 +137,4 @@ foreach ($categories as $category) {
 
 $table->finish_output();
 
-
-
-// echo '<table>';
-// foreach ($categories as $category) {
-// echo '<tr><td>';
-// echo $category->category_name;
-// echo '</td><td>';
-// echo $category->marksobtained;
-// echo '</td><td>';
-// echo $category->totalmarks;
-// echo '</td>';
-// echo '</tr>';
-// }
-// echo '</table>';
 echo $OUTPUT->footer();
-xdebug_break();
