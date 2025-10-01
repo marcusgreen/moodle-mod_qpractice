@@ -1,3 +1,8 @@
+### Moodle Question practice 1.4 October 2025
+
+Updated to be compatible with Moodle v5
+Migrated to use mustache and a Moodle 4.x style report
+
 ### Moodle Question Practice 1.3 Changes June 2019
 - Added a top category of questions for instance setting. Thanks to Steve Gallagher and Scott Hallman for feedback on this.
 - Codechecker and PHPDoc Check conformance
@@ -6,7 +11,7 @@
  - Fixed parameters in question_extend_settings_navigation, essential to make menu work in MDL3.2
  - Removed display of empty question categories in the questions dropdown (startattempt.php)
  - Deleted functions to do with scales that were never implemented
- - Tweaks to conform with codechecker suggestions https://moodle.org/plugins/local_codechecker 
+ - Tweaks to conform with codechecker suggestions https://moodle.org/plugins/local_codechecker
  - Created 1 phpUnit test and 1 behat test, will create more of both in the future
 
 

@@ -25,8 +25,6 @@
 
 namespace mod_qpractice\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Log viewings of qpractice
  *

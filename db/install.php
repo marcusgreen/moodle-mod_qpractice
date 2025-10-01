@@ -27,9 +27,10 @@
  *
  * @see upgrade_plugins_modules()
  */
-defined('MOODLE_INTERNAL') || die();
+
+
 /**
- * A placeholder for potentil future use
+ * Placeholder for potential future use
  *
  * @return void
  */

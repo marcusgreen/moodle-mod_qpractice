@@ -191,7 +191,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
             $elid = 'id_categories_' . $c->categoryid . '_parent_' . $parent->parent;
             $elid = "categories[$c->categoryid]";
             $elid = "id_category_$c->categoryid";
-            // $elid = 'id_category_17';
              $elid = "categories[$c->categoryid]";
              xdebug_break();
 

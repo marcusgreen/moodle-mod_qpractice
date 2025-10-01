@@ -23,10 +23,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace qpractice\attempt;
-
-defined('MOODLE_INTERNAL') || die();
-
 namespace mod_qpractice\event;
 /**
  * The qpractice_viewed event.
