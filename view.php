@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once('../../config.php');
+
 global $CFG, $USER;
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
@@ -51,7 +53,6 @@ $params = [
 ];
 $event = mod_qpractice\event\qpractice_viewed::create($params);
 $event->trigger();
-xdebug_break();
 
 $PAGE->set_url('/mod/qpractice/view.php', ['id' => $cm->id, 'courseid' => $course->id]);
 $PAGE->set_title(format_string($qpractice->name));

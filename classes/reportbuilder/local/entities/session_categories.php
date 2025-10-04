@@ -53,19 +53,28 @@ class session_categories extends base {
         ];
     }
 
-
+    /**
+     * Returns the default entity title.
+     *
+     * @return lang_string The default entity title as a lang_string object.
+     */
     protected function get_default_entity_title(): lang_string {
         return new lang_string('qpractice_session_categories', 'mod_qpractice');
     }
 
+    /**
+     * Initialise the entity with default columns
+     *
+     * @return self
+     */
     public function initialise(): base {
         $columns = $this->get_all_columns();
         foreach ($columns as $column) {
             $this->add_column($column);
         }
-
         return $this;
     }
+
     /**
      * Returns list of all available columns
      *

@@ -34,7 +34,11 @@ namespace mod_qpractice\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 class qpractice_attempted extends \core\event\base {
-    /** initialisation */
+    /**
+     * Initialise event
+     *
+     * @return void
+     */
     protected function init() {
         $this->data['crud'] = 'r';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;

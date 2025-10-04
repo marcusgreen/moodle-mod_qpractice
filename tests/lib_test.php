@@ -22,6 +22,8 @@
  * @copyright  2019 Marcus Green
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * */
+namespace mod_qpractice;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;

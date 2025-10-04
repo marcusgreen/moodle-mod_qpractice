@@ -31,14 +31,30 @@ use core_reportbuilder\local\filters\date;
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class sessions extends base {
+    /**
+     * base table for entity, could use alias i.e. []'s'=> 'sessions]
+     *
+     * @return array
+     */
     protected function get_default_tables(): array {
-        return ['sessions' => 'sessions'];
+        return ['sessions'];
     }
 
+    /**
+     * Description used in user interface.
+     *
+     * @return lang_string
+     */
     protected function get_default_entity_title(): lang_string {
         return new lang_string('qpractice_sessions', 'mod_qpractice');
     }
 
+    /**
+     * Initialises  report by adding all columns and filters.
+     * It also adds a condition for each filter.
+     *
+     * @return base The current instance of the report builder.
+     */
     public function initialise(): base {
         $columns = $this->get_all_columns();
         foreach ($columns as $column) {
@@ -52,6 +68,7 @@ class sessions extends base {
         }
         return $this;
     }
+
     /**
      * Returns list of all available columns
      *

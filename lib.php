@@ -62,7 +62,7 @@ function qpractice_supports($feature) {
  * @param mod_qpractice_mod_form $mform
  * @return int The id of the newly inserted qpractice record
  */
-function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
+function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform) {
     global $DB, $CFG;
     require_once($CFG->libdir . '/questionlib.php');
 
@@ -81,10 +81,15 @@ function qpractice_add_instance(stdClass $qpractice, mod_qpractice_mod_form $mfo
 
     return $qpractice->id;
 }
-
+/**
+ * Update the linked categories available for this instance of qpractice
+ *
+ * @param stdClass $qpractice
+ * @return void
+ */
 function upsert_categories(stdClass $qpractice) {
     global $DB;
-    $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->coursemodule]);
+    $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->id]);
     $recordstoinsert = [];
     foreach ($qpractice->categories as $categoryid => $checked) {
         if ($checked > 0) {
@@ -109,9 +114,8 @@ function upsert_categories(stdClass $qpractice) {
  * @param mod_qpractice_mod_form $mform
  * @return boolean Success/Fail
  */
-function qpractice_update_instance(stdClass $qpractice, mod_qpractice_mod_form $mform = null) {
+function qpractice_update_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform) {
     global $DB;
-    // $qpractice->categories = optional_param_array('categories', null, PARAM_INT);
 
     $qpractice->timemodified = time();
     $qpractice->id = $qpractice->instance;
@@ -238,15 +242,13 @@ function qpractice_print_recent_activity(int $course, bool $viewfullnames, int $
 function qpractice_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid = 0, $groupid = 0) {
 }
 
-
-
 /**
  * Function to be run periodically according to the moodle cron
  * This function searches for things that need to be done, such
  * as sending out mail, toggling flags etc ...
  *
  * @return boolean
- * @todo Finish documenting this function
+ *
  * */
 function qpractice_cron() {
     return true;
@@ -394,7 +396,7 @@ function qpractice_question_pluginfile(
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/$component/$filearea/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
         send_file_not_found();
     }
 
@@ -423,7 +425,7 @@ function qpractice_extend_navigation(navigation_node $navref, stdClass $course, 
  * @param settings_navigation $settingsnav {@link settings_navigation}
  * @param navigation_node $qpracticenode {@link navigation_node}
  */
-function qpractice_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $qpracticenode = null) {
+function qpractice_extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $qpracticenode) {
     global $PAGE, $CFG;
     require_once($CFG->libdir . '/questionlib.php');
     question_extend_settings_navigation($qpracticenode, $PAGE->cm->context)->trim_if_empty();

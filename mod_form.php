@@ -129,8 +129,21 @@ class mod_qpractice_mod_form extends moodleform_mod {
         return $categories ?: [];
     }
 
+    /**
+     * Recursively adds category checkboxes to the form.
+     *
+     * @param MoodleQuickForm $mform The Moodle form object to which the checkboxes will be added.
+     * @param array $categories An array of category objects, each containing properties like id, name, questioncount, and children.
+     * @param int $depth The current depth of the category in the tree. Defaults to 0.
+     * @return void This method modifies the $mform object by adding checkboxes.
+     */
     public function add_categories($mform, $categories, $depth = 0) {
         foreach ($categories as $c) {
+            // Skip categories with no children and no questions.
+            if (!isset($c->children) && $c->questioncount == 0) {
+                continue;
+            }
+
             $name = '';
             for ($i = 0; $i < $depth; $i++) {
                 $name .= '&nbsp;&nbsp;&nbsp;&nbsp;';
@@ -191,12 +204,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
             $elid = 'id_categories_' . $c->categoryid . '_parent_' . $parent->parent;
             $elid = "categories[$c->categoryid]";
             $elid = "id_category_$c->categoryid";
-             $elid = "categories[$c->categoryid]";
-             xdebug_break();
-
-             $el = $mform->getElement($elid);
-             $el->setChecked(true);
-
+            $elid = "categories[$c->categoryid]";
+            $el = $mform->getElement($elid);
+            $el->setChecked(true);
         }
         parent::set_data($defaultvalues);
     }

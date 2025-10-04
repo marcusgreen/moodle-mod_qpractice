@@ -21,7 +21,6 @@
  * @copyright 2019 Marcus Green
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Question practice module test data generator class
@@ -38,7 +37,7 @@ class mod_qpractice_generator extends testing_module_generator {
      * @param array $options
      * @return stdClass
      */
-    public function create_instance($record = null, array $options = null) {
+    public function create_instance($record = null, ?array $options) {
         global $CFG;
         require_once($CFG->dirroot . '/mod/qpractice/locallib.php');
         $record = (object)(array)$record;

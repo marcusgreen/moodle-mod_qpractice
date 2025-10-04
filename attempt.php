@@ -154,7 +154,7 @@ $html .= html_writer::empty_tag('input', [
 $html .= html_writer::end_tag('div');
 $html .= html_writer::end_tag('form');
 
-echo $html;
+echo $OUTPUT->box($html);
 // Display the settings form.
 
 echo $OUTPUT->footer();

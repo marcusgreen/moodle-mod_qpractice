@@ -24,7 +24,6 @@
  * @copyright  2013 Jayesh Anandani
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Consider for deletion.
@@ -54,7 +53,7 @@ function qpractice_make_default_categories($context) {
  * @return array  keys are the question category ids and values the name of the question category
  *
  */
-function qpractice_get_question_categories(\context $context, $mform, ?int $top, array $categories = null): array {
+function qpractice_get_question_categories(\context $context, $mform, ?int $top, ?array $categories): array {
     global $DB;
     if (empty($context)) {
         return '';
@@ -96,11 +95,17 @@ function qpractice_get_question_categories(\context $context, $mform, ?int $top,
     return [$contextcategories, $ct->html];
 }
 
+/**
+ * Class to build a tree of question categories with checkboxes for selection.
+ */
 class catTree {
+
     /**
      * Class to build a tree of question categories with checkboxes for selection.
-     */
+     * @var string $html;
+     * /
     public $html;
+
     /**
      * Build tree of categories with checkboxes to select the ones to
      * appear for a student to select from.
