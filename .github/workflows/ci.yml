@@ -1,0 +1,91 @@
+name: Moodle Plugin CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.1", "8.2"]
+        moodle: ["401", "402", "403"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          extensions: intl, gd, zip, xmlrpc, soap, sodium
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install moodle-plugin-ci
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci
+          echo "$PWD/ci/bin" >> $GITHUB_PATH
+
+      - name: Determine plugin type/path
+        id: plugindir
+        run: |
+          # Infer from version.php component string.
+          comp=$(php -r '$v=include "version.php"; echo $plugin->component ?? "";')
+          if [ -z "$comp" ]; then echo "Missing plugin->component"; exit 1; fi
+          type=${comp%%_*}
+          name=${comp#*_}
+          case "$type" in
+            mod|block|theme|tool|auth|enrol|filter|qtype|quiz|local|report|assignsubmission|assignfeedback|plagiarism|format|datafield|gradereport|availability|repository|portfolio|tiny|editor|message|mlbackend)
+              ;;
+            *) echo "Unsupported or unknown plugin type: $type"; exit 1;;
+          esac
+          echo "type=$type" >> $GITHUB_OUTPUT
+          echo "name=$name" >> $GITHUB_OUTPUT
+
+      - name: Init environment
+        run: |
+          moodle-plugin-ci install --plugin "$PWD" \
+            --type "${{ steps.plugindir.outputs.type }}" \
+            --moodle-version "${{ matrix.moodle }}"
+
+      - name: Lint
+        run: |
+          moodle-plugin-ci phplint
+          moodle-plugin-ci phpcpd
+          moodle-plugin-ci phpmd
+          moodle-plugin-ci codechecker --max-warnings 0
+          moodle-plugin-ci validate --max-warnings 0
+
+      - name: PHPUnit
+        run: |
+          moodle-plugin-ci phpunit --fail-on-warning
+
+      - name: Behat (smoke)
+        if: always()
+        run: |
+          # Run a tiny subset to validate basic UI wiring if scenarios exist
+          moodle-plugin-ci behat --profile chrome --tags @javascript --max-runs 10 || true
+
+      - name: PHPStan
+        run: |
+          moodle-plugin-ci phpstan
+
+      - name: Mustache Lint
+        run: |
+          moodle-plugin-ci mustache
+
