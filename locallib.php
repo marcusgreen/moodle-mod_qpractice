@@ -45,13 +45,13 @@ function qpractice_make_default_categories($context) {
 
 /**
  * This function returns an array of question bank categories accessible to the
- * current user in the given context
+ * current user in the given context.
  *
- * @return array
- * @param \context $context
- * @param int $top
- * @return array  keys are the question category ids and values the name of the question category
- *
+ * @param \context $context The context in which to check for question categories.
+ * @param \moodleform $mform The Moodle form object (if applicable).
+ * @param int|null $top The top category ID (optional).
+ * @param array|null $categories An array of categories (optional).
+ * @return array An array of question bank categories.
  */
 function qpractice_get_question_categories(\context $context, $mform, ?int $top, ?array $categories): array {
     global $DB;
@@ -99,10 +99,10 @@ function qpractice_get_question_categories(\context $context, $mform, ?int $top,
  * Class to build a tree of question categories with checkboxes for selection.
  */
 class catTree {
-
     /**
      * Class to build a tree of question categories with checkboxes for selection.
      * @var string $html;
+     *
      * /
     public $html;
 
@@ -110,9 +110,9 @@ class catTree {
      * Build tree of categories with checkboxes to select the ones to
      * appear for a student to select from.
      *
-     * @param [type] $mform
-     * @param [type] $elements
-     * @param integer $parentid
+     * @param \MoodleQuickForm $mform The Moodle form object.
+     * @param array $elements An array of category elements.
+     * @param int $parentid The parent category ID.
      * @return void
      */
     public function buildtree(\MoodleQuickForm $mform, array $elements, int $parentid = 0) {
@@ -223,7 +223,7 @@ function qpractice_delete_attempt(int $sessionid) {
 /**
  * Get questionid's from category and any subcategories.
  *
- * @param int $categoryid
+ * @param array $categories
  * @return array
  */
 function get_available_questions_from_categories(array $categories): array {
@@ -236,7 +236,7 @@ function get_available_questions_from_categories(array $categories): array {
 /**
  * Get another question (at runtime)
  *
- * @param int $categoryid
+ * @param array $categories
  * @param array $excludedquestions
  * @param bool $allowshuffle
  * @return \stdClass

@@ -31,11 +31,11 @@
  */
 class mod_qpractice_generator extends testing_module_generator {
     /**
-     * create an instance
+     * Creates an instance of the qpractice module.
      *
-     * @param array $record
-     * @param array $options
-     * @return stdClass
+     * @param array|null $record An array of data to create the instance. Defaults to null.
+     * @param array|null $options An  array of options for creating the instance. Defaults to null.
+     * @return stdClass The created instance object.
      */
     public function create_instance($record = null, ?array $options = null) {
         global $CFG;
