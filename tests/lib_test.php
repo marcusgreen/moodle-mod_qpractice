@@ -37,7 +37,7 @@ require_once($CFG->dirroot . '/mod/qpractice/lib.php');
  * @copyright   2023 Marcus Green
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *  */
-final class lib_test extends advanced_testcase {
+final class lib_test extends \advanced_testcase {
     /**
      * instance of question practice for use
      * in other methods
@@ -54,8 +54,9 @@ final class lib_test extends advanced_testcase {
     public function test_qpractice_add_instance(): void {
         $this->resetAfterTest(true);
         $this->setAdminUser();
+        $_POST['categories'] = [];
         $id = qpractice_add_instance($this->qp);
-        $this->assertInternalType("int", $id);
+        $this->assertIsInt($id);
     }
 
     /**
@@ -67,10 +68,10 @@ final class lib_test extends advanced_testcase {
         $this->resetAfterTest(true);
         $this->setAdminUser();
 
-        $context = context_module::instance($this->qp->coursemodule);
+        $context = \context_module::instance($this->qp->coursemodule);
         $this->qp->instanceid = qpractice_add_instance($this->qp);
         $sessionid = qpractice_session_create($this->qp, $context);
-        $this->assertInternalType("int", $sessionid);
+        $this->assertIsInt($sessionid);
     }
     /**
      * Create an instance on a course then delete it.
@@ -95,11 +96,11 @@ final class lib_test extends advanced_testcase {
      *
      * @return void
      */
-    public function setup() {
+    public function setup(): void {
         global $SITE;
         $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
         $qpractice = $qpracticegenerator->create_instance(['course' => $SITE->id]);
-        $this->qp = new stdClass();
+        $this->qp = new \stdClass();
         $this->qp->name = 'QP1';
         $this->qp->topcategory = 62;
         $this->qp->visible = 1;
@@ -108,7 +109,7 @@ final class lib_test extends advanced_testcase {
         $this->qp->availabilityconditionsjson = "";
         $this->qp->behaviour = ['interactive'];
         $this->qp->course = 2;
-        $this->qp->categories = 26;
+        $this->qp->categories = [];
 
         $this->qp->coursemodule = $qpractice->cmid;
     }

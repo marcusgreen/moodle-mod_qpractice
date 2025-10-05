@@ -62,7 +62,7 @@ function qpractice_supports($feature) {
  * @param mod_qpractice_mod_form $mform
  * @return int The id of the newly inserted qpractice record
  */
-function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform) {
+function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform = null) {
     global $DB, $CFG;
     require_once($CFG->libdir . '/questionlib.php');
 
@@ -72,7 +72,7 @@ function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mf
     $qpractice->behaviour = $comma;
 
     $qpractice->id = $DB->insert_record('qpractice', $qpractice);
-    $categories = optional_param_array('categories', '', PARAM_INT);
+    $categories = optional_param_array('categories', [], PARAM_INT);
     $qpractice->categories = $categories;
 
     upsert_categories($qpractice);
