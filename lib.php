@@ -369,24 +369,24 @@ function qpractice_pluginfile($course, $cm, $context, $filearea, array $args, $f
 }
 
 /**
- * Deal with attached files (do we have any?)
+ * Serves the qpractice question files.
  *
- * @param int $course
- * @param \context $context
- * @param int $component
- * @param int $filearea
- * @param int $qubaid
- * @param int $slot
- * @param array $args
- * @param [type] $forcedownload
- * @param array $options
- * @return void
+ * @param stdClass $course The course object.
+ * @param context $context The context object (module or higher).
+ * @param string $component The component name (e.g. 'question').
+ * @param string $filearea The file area within the component.
+ * @param int $qubaid The question usage by activity id.
+ * @param int $slot The slot number within the usage.
+ * @param array $args Remaining path arguments for the file.
+ * @param bool $forcedownload Whether to force download.
+ * @param array $options Additional options affecting the file serving.
+ * @return void Sends the file or raises not found; does not return on success.
  */
-function qpractice_question_pluginfile(
-    int $course,
+function mod_qpractice_question_pluginfile(
+    \stdClass $course,
     \context $context,
-    int $component,
-    int $filearea,
+    string $component,
+    string $filearea,
     int $qubaid,
     int $slot,
     array $args,
@@ -396,11 +396,17 @@ function qpractice_question_pluginfile(
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/$component/$filearea/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file) {
+        send_file_not_found();
+    }
+    if ($file->is_directory()) {
         send_file_not_found();
     }
 
     send_stored_file($file, 0, 0, $forcedownload, $options);
+
 }
 
 /**
