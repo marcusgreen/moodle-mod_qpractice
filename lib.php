@@ -406,7 +406,6 @@ function mod_qpractice_question_pluginfile(
     }
 
     send_stored_file($file, 0, 0, $forcedownload, $options);
-
 }
 
 /**
