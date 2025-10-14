@@ -108,6 +108,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         $sql = "select * from {course_modules} where module = 16 and course = :courseid";
         $qbanks = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        if (empty($qbanks)) {
+            $msg = get_string('noquestionbanks', 'qpractice');
+            \core\notification::add($msg, \core\notification::WARNING);
+            return [];
+        }
 
         $contexts = [];
         foreach ($qbanks as $qbank) {

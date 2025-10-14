@@ -44,6 +44,7 @@ $string['modulename_help'] = 'Create settings for students to practice standard 
 $string['modulename_link'] = 'Question_practice_module';
 $string['modulenameplural'] = 'Question Practices';
 $string['nextquestion'] = 'View next question';
+$string['noquestionbanks'] = 'No question banks/categories found';
 $string['nomorequestions'] = 'Sorry, no more questions to display. Try a different category';
 $string['noofquestionsright'] = 'No. of questions right';
 $string['noofquestionsviewed'] = 'No. of Questions viewed';
