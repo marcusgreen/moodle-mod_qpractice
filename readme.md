@@ -1,7 +1,7 @@
 #### Moodle Question Practice for Moodle maintained by Marcus Green
 
 Allows Quiz questions to be practiced. User can select from multiple
-(top level) categories, documented at
+Course question bank categories, documented at
 
 https://docs.moodle.org/en/Question_practice_module
 
