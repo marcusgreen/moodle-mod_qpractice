@@ -192,7 +192,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
     /**
      * Load in existing data as form defaults.
      *
-     * @param mixed $question object or array of default values
+     * @param mixed $defaultvalues object or array of default values
      */
     public function set_data($defaultvalues) {
         global $DB;

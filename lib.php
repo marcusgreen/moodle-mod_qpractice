@@ -59,7 +59,7 @@ function qpractice_supports($feature) {
  * of the new instance.
  *
  * @param stdClass $qpractice An object from the form in mod_form.php
- * @param mod_qpractice_mod_form $mform
+ * @param mod_qpractice_mod_form|null $mform The form object, if available
  * @return int The id of the newly inserted qpractice record
  */
 function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform = null) {
@@ -111,8 +111,8 @@ function upsert_categories(stdClass $qpractice) {
  * will update an existing instance with new data.
  *
  * @param stdClass $qpractice An object from the form in mod_form.php
- * @param mod_qpractice_mod_form $mform
- * @return boolean Success/Fail
+ * @param mod_qpractice_mod_form|null $mform The form object, can be null
+ * @return bool Success/Fail
  */
 function qpractice_update_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mform) {
     global $DB;
@@ -228,11 +228,11 @@ function qpractice_print_recent_activity(int $course, bool $viewfullnames, int $
  *
  * This callback function is supposed to populate the passed array with
  * custom activity records. These records are then rendered into HTML via
- * {@link qpractice_print_recent_mod_activity()}.
+ * qpractice_print_recent_mod_activity()
  *
  * @param array $activities sequentially indexed array of objects with the 'cmid' property
  * @param int $index the index in the $activities to use for the next record
- * @param int $timestart append activity since this time
+ * @param int $timestart append activities since this time
  * @param int $courseid the id of the course we produce the report for
  * @param int $cmid course module id
  * @param int $userid check for a particular user's activity only, defaults to 0 (all users)
@@ -310,7 +310,7 @@ function qpractice_update_grades(stdClass $qpractice, $userid = 0) {
  * Returns the lists of all browsable file areas within the given module context
  *
  * The file area 'intro' for the activity introduction field is added automatically
- * by {@link file_browser::get_file_info_context_module()}
+ * by file_browser::get_file_info_context_module()
  *
  * @param stdClass $course
  * @param stdClass $cm
@@ -369,24 +369,24 @@ function qpractice_pluginfile($course, $cm, $context, $filearea, array $args, $f
 }
 
 /**
- * Deal with attached files (do we have any?)
+ * Serves the qpractice question files.
  *
- * @param int $course
- * @param \context $context
- * @param int $component
- * @param int $filearea
- * @param int $qubaid
- * @param int $slot
- * @param array $args
- * @param [type] $forcedownload
- * @param array $options
- * @return void
+ * @param stdClass $course The course object.
+ * @param context $context The context object (module or higher).
+ * @param string $component The component name (e.g. 'question').
+ * @param string $filearea The file area within the component.
+ * @param int $qubaid The question usage by activity id.
+ * @param int $slot The slot number within the usage.
+ * @param array $args Remaining path arguments for the file.
+ * @param bool $forcedownload Whether to force download.
+ * @param array $options Additional options affecting the file serving.
+ * @return void Sends the file or raises not found; does not return on success.
  */
-function qpractice_question_pluginfile(
-    int $course,
+function mod_qpractice_question_pluginfile(
+    \stdClass $course,
     \context $context,
-    int $component,
-    int $filearea,
+    string $component,
+    string $filearea,
     int $qubaid,
     int $slot,
     array $args,
@@ -396,7 +396,12 @@ function qpractice_question_pluginfile(
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
     $fullpath = "/$context->id/$component/$filearea/$relativepath";
-    if (!$file = $fs->get_file_by_hash(sha1($fullpath)) || $file->is_directory()) {
+
+    $file = $fs->get_file_by_hash(sha1($fullpath));
+    if (!$file) {
+        send_file_not_found();
+    }
+    if ($file->is_directory()) {
         send_file_not_found();
     }
 
@@ -422,8 +427,8 @@ function qpractice_extend_navigation(navigation_node $navref, stdClass $course, 
  * This function is called when the context for the page is a qpractice module. This is not called by AJAX
  * so it is safe to rely on the $PAGE.
  *
- * @param settings_navigation $settingsnav {@link settings_navigation}
- * @param navigation_node $qpracticenode {@link navigation_node}
+ * @param settings_navigation $settingsnav The settings navigation object
+ * @param navigation_node|null $qpracticenode The qpractice navigation node, if available
  */
 function qpractice_extend_settings_navigation(settings_navigation $settingsnav, ?navigation_node $qpracticenode) {
     global $PAGE, $CFG;

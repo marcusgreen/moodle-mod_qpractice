@@ -48,7 +48,7 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * add an instance and check the id that is returned
-     *
+     * @covers ::add_instance()
      * @return void
      */
     public function test_qpractice_add_instance(): void {
@@ -61,6 +61,7 @@ final class lib_test extends \advanced_testcase {
 
     /**
      * Create a session and check that an int is returned for the sessionid
+     * @covers ::session_create();
      *
      * @return void
      */
@@ -76,6 +77,9 @@ final class lib_test extends \advanced_testcase {
     /**
      * Create an instance on a course then delete it.
      * Check that the instance really was deleted.
+     *
+     * @covers ::delete_instance()
+     * @return void
      */
     public function test_qpractice_delete_instance(): void {
         global $SITE, $DB;
