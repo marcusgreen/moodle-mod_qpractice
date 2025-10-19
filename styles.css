@@ -1,17 +1,24 @@
-.qpractice .qpbtn{
+.qpractice .qpbtn {
     margin-right: 3px;
     border-radius: 5px;
     background-color: #ced4da;
     border-color: #ced4da;
 }
-.qpractice .qpbtn:hover{
+.qpractice .qpbtn:hover {
     box-shadow: 0 0 5px #7bc1f7;
 }
 
-.qpractice .question_count{
-    padding-left:0.25em;
+.qpractice .question_count {
+    padding-left: 0.25em;
 }
-.qpractice .category_name{
-    padding-right:0.25em;
+.qpractice .category_name {
+    padding-right: 0.25em;
 }
-.qpractice label {padding-right:0.24em; display: inline; float: left; } label:after { content: "" }
+.qpractice label {
+    padding-right: 0.24em;
+    display: inline;
+    float: left;
+}
+label:after {
+    content: "";
+}

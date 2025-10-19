@@ -1,18 +1,14 @@
+### Moodle Question practice Next release
+
+Lint fixes to styles.css
+
 ### Moodle Question practice 1.4 October 2025
 
 This is the first update to the Moodle plugins database since 2016 and the functionality may have changed unexpectdly.
 
-<<<<<<< HEAD
-It is now has a setting to configure multiple question categories to be selected by a user making
-an attempt.
-
-Updated to be compatible with Moodle v5
-Migrated to use mustache and a Moodle 4.x style report
-=======
 It is now has a setting to configure multiple question categories to be selected by a user making an attempt.
 
 Updated to be compatible with Moodle v5 Migrated to use mustache and a Moodle 4.x style report
->>>>>>> main
 
 ### Moodle Question Practice 1.3 Changes June 2019
 - Added a top category of questions for instance setting. Thanks to Steve Gallagher and Scott Hallman for feedback on this.
@@ -36,7 +32,6 @@ Updated to be compatible with Moodle v5 Migrated to use mustache and a Moodle 4.
 - Code to ensure jquery initialisation e.g in gapfill and ordering 3rd party questions
 - Replaced deprecatied function call add_intro_editor with standard_intro_elements
 - Replaced save_questionss_usage_by_activity with inline code to avoid exception message
-
 
 
 
