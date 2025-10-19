@@ -1,5 +1,10 @@
 ### Moodle Question practice 1.4 October 2025
 
+This is the first update to the Moodle plugins database since 2016 and the functionality may have changed unexpectdly.
+
+It is now has a setting to configure multiple question categories to be selected by a user making
+an attempt.
+
 Updated to be compatible with Moodle v5
 Migrated to use mustache and a Moodle 4.x style report
 
