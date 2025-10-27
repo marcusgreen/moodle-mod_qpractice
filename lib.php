@@ -45,6 +45,10 @@ function qpractice_supports($feature) {
             return true;
         case FEATURE_MOD_PURPOSE:
             return MOD_PURPOSE_ASSESSMENT;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:
+            return true;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return true;
         default:
             return null;
     }
