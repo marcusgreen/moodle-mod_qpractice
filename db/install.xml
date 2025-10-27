@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="qpractice" COMMENT="Default comment for qpractice, please edit me">
+    <TABLE NAME="qpractice" COMMENT="Main qpractice activity instances">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="course" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Course qpractice activity belongs to"/>
@@ -23,7 +23,7 @@
         <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="qpractice_session" COMMENT="Default comment for the table, please edit me">
+    <TABLE NAME="qpractice_session" COMMENT="Practice session records with scores and progress">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="qpracticeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
@@ -65,7 +65,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-        <KEY NAME="qppractice_session_cat" TYPE="foreign" FIELDS="category" REFTABLE="qpractice_categories" REFFIELDS="id"/>
+        <KEY NAME="qpractice_session_cat" TYPE="foreign" FIELDS="category" REFTABLE="qpractice_categories" REFFIELDS="id"/>
         <KEY NAME="qpractice_sessions" TYPE="foreign" FIELDS="session" REFTABLE="qpractice_session" REFFIELDS="id"/>
       </KEYS>
     </TABLE>
