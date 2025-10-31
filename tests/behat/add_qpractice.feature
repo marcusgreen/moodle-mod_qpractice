@@ -28,7 +28,7 @@ Feature: Add a qpractice
     When I am on the "Course 1" "core_question > course question import" page logged in as "teacher1"
     And I set the field "id_format_xml" to "1"
 
-    And I upload "mod/qpractice/tests/fixtures/category_quesitons.xml" file to "Import" filemanager
+    And I upload "mod/qpractice/tests/fixtures/category_questions.xml" file to "Import" filemanager
     And I press "id_submitbutton"
     Then I should see "Parsing questions from import file."
     And I press "Continue"
