@@ -85,7 +85,7 @@ function qpractice_get_question_categories(\context $context, $mform, ?int $top,
         $top = min($catarray);
     }
 
-    $ct = new catTree();
+    $ct = new CatTree();
 
     $ct->buildtree($mform, $contextcategories, $top - 1);
 
@@ -98,7 +98,7 @@ function qpractice_get_question_categories(\context $context, $mform, ?int $top,
 /**
  * Class to build a tree of question categories with checkboxes for selection.
  */
-class catTree {
+class CatTree {
     /**
      * Class to build a tree of question categories with checkboxes for selection.
      * @var string $html;
