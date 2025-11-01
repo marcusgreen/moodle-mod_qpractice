@@ -95,6 +95,36 @@ final class lib_test extends \advanced_testcase {
         $this->assertEquals(0, $count);
     }
     /**
+     * Update an instance and check that the record is updated
+     * @covers ::update_instance()
+     * @return void
+     */
+    public function test_qpractice_update_instance(): void {
+        global $SITE, $DB;
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+
+        // Setup a qpractice instance.
+        $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
+        $qpractice = $qpracticegenerator->create_instance(['course' => $SITE->id]);
+
+        // Update the instance.
+        $updaterecord = new \stdClass();
+        $updaterecord->id = $qpractice->id;
+        $updaterecord->instance = $qpractice->id;
+        $updaterecord->name = 'Updated QPractice';
+        $updaterecord->behaviour = ['interactive' => 1];
+        $updaterecord->categories = [];
+
+        $result = qpractice_update_instance($updaterecord, null);
+        $this->assertTrue($result);
+
+        // Check that the record was updated.
+        $updated = $DB->get_record('qpractice', ['id' => $qpractice->id]);
+        $this->assertEquals('Updated QPractice', $updated->name);
+    }
+
+    /**
      * initialise globally available object for user
      * in other methods.
      *
