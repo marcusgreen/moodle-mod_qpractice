@@ -153,6 +153,18 @@ function qpractice_delete_instance($id) {
         return false;
     }
 
+    // Delete associated sessions.
+    $sessionids = $DB->get_records('qpractice_session', ['qpracticeid' => $qpractice->id], '', 'id');
+    foreach ($sessionids as $sessionid) {
+        // Delete associated session categories.
+        $DB->delete_records('qpractice_session_cats', ['session' => $sessionid->id]);
+    }
+    $DB->delete_records('qpractice_session', ['qpracticeid' => $qpractice->id]);
+
+    // Delete associated categories.
+    $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->id]);
+
+    // Delete the main qpractice record.
     $DB->delete_records('qpractice', ['id' => $qpractice->id]);
 
     return true;

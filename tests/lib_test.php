@@ -88,10 +88,44 @@ final class lib_test extends \advanced_testcase {
         // Setup a qpractice instance.
         $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
         $qpractice = $qpracticegenerator->create_instance(['course' => $SITE->id]);
+
+        // Create some related records to test deletion.
+        $session = (object) [
+            'qpracticeid' => $qpractice->id,
+            'userid' => 2,
+            'timecreated' => time(),
+            'practicedate' => time(),
+             'questionusageid' => 1,
+            'typeofpractice' => 1,
+        ];
+        $sessionid = $DB->insert_record('qpractice_session', $session);
+
+        $sessioncat = (object) [
+            'session' => $sessionid,
+            'category' => 1,
+        ];
+        $DB->insert_record('qpractice_session_cats', $sessioncat);
+
+        $qpracat = (object) [
+            'qpracticeid' => $qpractice->id,
+            'categoryid' => 1,
+        ];
+        $DB->insert_record('qpractice_categories', $qpracat);
+
         qpractice_delete_instance($qpractice->id);
 
         // Check that the qpractice was removed.
         $count = $DB->count_records('qpractice', ['id' => $qpractice->id]);
+        $this->assertEquals(0, $count);
+
+        // Check that related records were also removed.
+        $count = $DB->count_records('qpractice_session', ['qpracticeid' => $qpractice->id]);
+        $this->assertEquals(0, $count);
+
+        $count = $DB->count_records('qpractice_session_cats', ['session' => $sessionid]);
+        $this->assertEquals(0, $count);
+
+        $count = $DB->count_records('qpractice_categories', ['qpracticeid' => $qpractice->id]);
         $this->assertEquals(0, $count);
     }
     /**
