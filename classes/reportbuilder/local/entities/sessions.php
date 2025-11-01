@@ -157,7 +157,10 @@ class sessions extends base {
             new lang_string('viewdetails', 'mod_qpractice'),
             $this->get_entity_name()
         ));
+        // Set column title and description
+        $column->set_title(new lang_string('viewdetails', 'mod_qpractice'));
         $column->add_field("{$sessionsalias}.id", 'sessionid');
+        // Add callback to generate the view details icon with link
         $column->add_callback(static function (string $value, \stdClass $row): string {
             $url = new \moodle_url('/mod/qpractice/summary.php', ['id' => $row->sessionid]);
             return \html_writer::link($url, \html_writer::empty_tag('i', ['class' => 'fa fa-search', 'aria-hidden' => 'true']));
@@ -168,10 +171,11 @@ class sessions extends base {
         return $columns;
     }
     /**
-     * Allow selection on the firstname field.
-     * A real report would have more filters
+     * Returns list of all available filters
      *
-     * @return array
+     * These are all the filters available to use in any report that uses this entity.
+     *
+     * @return filter[]
      */
     public function get_all_filters(): array {
         $tablealias = $this->get_table_alias('sessions');
