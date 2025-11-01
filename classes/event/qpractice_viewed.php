@@ -59,6 +59,18 @@ class qpractice_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url(): \moodle_url {
-        return new \moodle_url('/mod/qpractice/view.php', ['id' => $this->courseid]);
+        return new \moodle_url('/mod/qpractice/view.php', ['id' => $this->objectid]);
+    }
+
+    /**
+     * Return navigation url for this event.
+     *
+     * @return \moodle_url|null
+     */
+    public function get_navigation_url(): ?\moodle_url {
+        if ($this->context === null) {
+            return null;
+        }
+        return $this->get_url();
     }
 }
