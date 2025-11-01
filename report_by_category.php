@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script controls the display of the qpractice reports.
+ * This script displays the categories covered in a qpractice session.
  *
  * @package    mod_qpractice
  * @copyright  2013 Jayesh Anandani
@@ -26,9 +26,8 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/renderer.php');
 require_once("$CFG->libdir/formslib.php");
 
-$sessionid = required_param('sessionid', PARAM_INT); // Course-Module id.
-$cmid = required_param('cmid', PARAM_INT); // Course-Module id.
-
+$sessionid = required_param('sessionid', PARAM_INT);
+$cmid = required_param('cmid', PARAM_INT);
 
 if ($cmid) {
     if (!$cm = get_coursemodule_from_id('qpractice', $cmid)) {
@@ -42,100 +41,50 @@ if ($cmid) {
 
 require_login($course, true, $cm);
 
+require_once(dirname(__FILE__) . '/lib.php');
+
 $context = context_module::instance($cm->id);
+$PAGE->set_context($context);
+$PAGE->set_url(new moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionid, 'cmid' => $cmid]));
+$params = [
+    'objectid' => $cm->id,
+    'context' => $context,
+];
+$event = \mod_qpractice\event\qpractice_report_viewed::create($params);
+$event->trigger();
 
-$report = \core_reportbuilder\system_report_factory::create(
-    \mod_qpractice\reportbuilder\local\systemreports\qpractice_session_categories_report::class,
-    $context
-);
-
-$backurl = new moodle_url('/mod/qpractice/view.php', ['id' => $sessionid]);
+$backurl = new moodle_url('/mod/qpractice/view.php', ['id' => $cm->id]);
 $backtext = get_string('backurl', 'qpractice');
 $PAGE->set_pagelayout('admin');
-$PAGE->set_url('/mod/qpractice/report_by_category.php');
 
 echo $OUTPUT->header();
-$t = new html_table();
-$t->head = [get_string('category', 'qpractice'), get_string('marksobtained', 'qpractice'), get_string('totalmarks', 'qpractice')];
-$t->data = $categories;
-$columns = [
-    'category_name' => 'category_name',
-    'marksobtained' => get_string('marksobtained', 'qpractice'),
-    'categorytotal' => get_string('totalmarks', 'qpractice'),
-];
-$headers = [
-    get_string('category', 'qpractice'),
-    'Question count',
-     'Sum of marks',
-];
 
-$table = new flexible_table('questioncategories');
-$table->sortable(true, 'category_name', SORT_ASC);
-$table->set_control_variables([
-    TABLE_VAR_SORT    => 'ssort',
-    TABLE_VAR_IFIRST  => 'sifirst',
-    TABLE_VAR_ILAST   => 'silast',
-    TABLE_VAR_PAGE    => 'spage',
-    ]);
-
-$table->no_sorting('select');
-$table->no_sorting('status');
-
-
-$table->define_headers($headers);
-$table->define_columns($columns);
-$table->column_style('restore', 'text-align', 'center');
-$table->column_style('delete', 'text-align', 'center');
-$table->define_baseurl($PAGE->url);
-$table->set_attribute('id', 'questioncategoryable');
-$table->setup();
-if ($table->get_sql_sort()) {
-    $sort = $table->get_sql_sort();
-} else {
-    $sort = '';
-}
-
-
-$sql = "SELECT qa.questionid,qa.maxmark, qas.fraction, qbe.questioncategoryid as categoryid FROM {question_usages} qu
-        JOIN {question_attempts} qa  ON qa.questionusageid = qu.id
-        JOIN {qpractice_session} session ON session.questionusageid = qu.id
-        JOIN {question_attempt_steps} qas ON qas.questionattemptid = qa.id
-        JOIN {question_versions} qver ON qver.questionid = qa.questionid
-        JOIN {question_bank_entries} qbe ON qbe.id = qver.questionbankentryid
-        WHERE qu.contextid = :contextid
-        AND qas.fraction IS NOT NULL
-        AND session.id = :sessionid";
-$qusage = $DB->get_records_sql($sql, ['contextid' => $context->id, 'sessionid' => $sessionid]);
-
-
-$sql = "SELECT distinct qcats.id, qcats.name as category_name, session.totalmarks
-        FROM {qpractice} qp
-        JOIN {qpractice_session} session ON session.qpracticeid = qp.id
-        JOIN {qpractice_session_cats} sessioncats ON session.id = sessioncats.session
-        JOIN {question_categories} qcats ON sessioncats.category = qcats.id
-        WHERE session.id = :sessionid ";
-        $sql .= ' ORDER BY ' . $sort;
+// Get categories and question counts for this session.
+$sql = "SELECT qc.name as categoryname, COUNT(qa.id) as questioncount
+        FROM {qpractice_session} qs
+        JOIN {qpractice_session_cats} qsc ON qs.id = qsc.session
+        JOIN {question_categories} qc ON qsc.category = qc.id
+        JOIN {question_usages} qu ON qs.questionusageid = qu.id
+        JOIN {question_attempts} qa ON qu.id = qa.questionusageid
+        WHERE qs.id = :sessionid
+        GROUP BY qc.name, qc.id
+        ORDER BY qc.name";
 
 $categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
 
-foreach ($categories as $category) {
-        $categorytotal = 0;
-        $questioncount = 0;
-    foreach ($qusage as $q) {
-        if ($q->categoryid == $category->id) {
-            $categorytotal += $q->fraction;
-            $questioncount++;
-        }
-    }
-        $category->questioncount = $questioncount;
-        $category->marksobtained = $categorytotal;
-}
+// Display the results in a table.
+$table = new html_table();
+$table->head = [get_string('categoryname', 'qpractice'), get_string('questioncount', 'qpractice')];
+$table->data = [];
 
 foreach ($categories as $category) {
-    unset($category->id);
-    $table->add_data((array) $category);
+    $table->data[] = [$category->categoryname, $category->questioncount];
 }
 
-$table->finish_output();
+echo html_writer::table($table);
 
+echo html_writer::empty_tag('br');
+echo html_writer::link($backurl, $backtext);
+
+// Finish the page.
 echo $OUTPUT->footer();

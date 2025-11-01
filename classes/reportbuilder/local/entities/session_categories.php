@@ -22,6 +22,7 @@ use core_reportbuilder\local\report\column;
 use core_reportbuilder\local\report\filter;
 use core_reportbuilder\local\filters\number;
 use core_reportbuilder\local\filters\date;
+use core_reportbuilder\local\helpers\database;
 
 /**
  * Reportbuilder entity sessions.
@@ -46,9 +47,8 @@ class session_categories extends base {
      */
     protected function get_default_tables(): array {
         return [
-            'sessions' => 'qpractice_sessions',
-            'session_categoriess' => 'qpractice_session_cats',
-            'qpractice_categories' => 'qpractice_categories',
+            'qpractice_session' => 'qpractice_session',
+            'qpractice_session_cats' => 'qpractice_session_cats',
             'question_categories' => 'question_categories',
         ];
     }
@@ -84,13 +84,29 @@ class session_categories extends base {
      */
     protected function get_all_columns(): array {
         $columns = [];
+
+        // Get table aliases.
+        $sessionsalias = $this->get_table_alias('qpractice_session');
+        $sessioncatsalias = $this->get_table_alias('qpractice_session_cats');
+        $questioncatsalias = $this->get_table_alias('question_categories');
+
+        // Category name column.
         $column = (new column(
-            'practicedate',
-            new lang_string('practicedate', 'mod_qpractice'),
+            'categoryname',
+            new lang_string('categoryname', 'mod_qpractice'),
             $this->get_entity_name()
         ));
-        $column->add_field('practicedate');
-        $column->add_field('id');
+        $column->add_field("{$questioncatsalias}.name", 'categoryname');
+        $columns[] = $column;
+
+        // Question count column.
+        $column = (new column(
+            'questioncount',
+            new lang_string('questioncount', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field("COUNT(qa.id)", 'questioncount');
+        $column->set_is_sortable(true);
         $columns[] = $column;
 
         return $columns;

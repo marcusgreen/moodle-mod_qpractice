@@ -33,14 +33,21 @@ class qpractice_session_categories_report extends system_report {
         $sessioncategories = new session_categories();
         $this->add_entity($sessioncategories);
 
-        $join = "LEFT JOIN {qpractice_session_cats} scats ON {qpractice_sessions}.id = scats.sessionid";
+        // Get the session ID from the URL parameters.
+        $sessionid = optional_param('sessionid', 0, PARAM_INT);
 
-        $sessioncategories->add_join($join);
+        // Add joins to connect sessions with categories.
+        $this->add_join("JOIN {qpractice_session_cats} sessioncats ON {qpractice_session}.id = sessioncats.session");
+        $this->add_join("JOIN {question_categories} qcats ON sessioncats.category = qcats.id");
 
-        $alias = $sessioncategories->get_table_alias('qpractice_sessions');
+        // Add condition to filter by specific session.
+        if ($sessionid) {
+            $paramname = \core_reportbuilder\local\helpers\database::generate_param_name();
+            $this->add_base_condition_sql("{qpractice_session}.id = :$paramname", [$paramname => $sessionid]);
+        }
 
         $this->add_columns();
-        $this->set_main_table('qpractice_session', $alias);
+        $this->set_main_table('qpractice_session', 'qpractice_session');
     }
 
     /**
@@ -60,7 +67,8 @@ class qpractice_session_categories_report extends system_report {
      */
     protected function add_columns(): void {
         $columns = [
-            'session_categories:practicedate',
+            'session_categories:categoryname',
+            'session_categories:questioncount',
         ];
         $this->add_columns_from_entities($columns);
     }

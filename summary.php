@@ -85,6 +85,11 @@ $output = $PAGE->get_renderer('mod_qpractice');
 
 echo $OUTPUT->header();
 echo $output->summary_table($sessionid);
+
+// Add link to session categories report.
+$reporturl = new moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionid, 'cmid' => $cm->id]);
+echo html_writer::link($reporturl, get_string('viewpastsessions', 'qpractice'), ['class' => 'btn btn-primary mb-3']);
+
 echo $output->summary_form($sessionid);
 
 // Finish the page.
