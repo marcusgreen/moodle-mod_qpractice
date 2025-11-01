@@ -90,6 +90,7 @@ class qpractice_sessions_report extends system_report {
             'sessions:marksobtained',
             'sessions:totalnoofquestions',
             'sessions:totalnoofquestionsright',
+            'sessions:viewdetails',
         ];
         $this->add_columns_from_entities($columns);
     }

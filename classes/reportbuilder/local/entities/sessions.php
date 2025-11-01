@@ -151,6 +151,20 @@ class sessions extends base {
 
         $columns[] = $column;
 
+        // Add a column with magnifying glass icon for viewing details
+        $column = (new column(
+            'viewdetails',
+            new lang_string('viewdetails', 'mod_qpractice'),
+            $this->get_entity_name()
+        ));
+        $column->add_field("{$sessionsalias}.id", 'sessionid');
+        $column->add_callback(static function (string $value, \stdClass $row): string {
+            $url = new \moodle_url('/mod/qpractice/summary.php', ['id' => $row->sessionid]);
+            return \html_writer::link($url, \html_writer::empty_tag('i', ['class' => 'fa fa-search', 'aria-hidden' => 'true']));
+        });
+
+        $columns[] = $column;
+
         return $columns;
     }
     /**

@@ -91,5 +91,6 @@ $string['totalnoofquestions'] = 'No of questions viewed';
 $string['totalnoofquestionsright'] = 'No of questions right';
 $string['totalquestions'] = 'Total questions attempted';
 $string['typeofpractice'] = 'Type of Practice';
+$string['viewdetails'] = 'View details';
 $string['viewpastsessions'] = 'View all past sessions';
 $string['viewurl'] = 'No Records exist';
