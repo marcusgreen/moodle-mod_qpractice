@@ -27,8 +27,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025092899;      // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2026041900;      // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2025041400;      // Requires Moodle 5.X.
 $plugin->component = 'mod_qpractice'; // To check on upgrade, that plugin sits in correct place.
 $plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '1.4';
+$plugin->release   = '1.5';

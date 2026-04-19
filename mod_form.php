@@ -104,31 +104,24 @@ class mod_qpractice_mod_form extends moodleform_mod {
      * @return array List of categories (stdClass) indexed by id.
      */
     public function get_categories(int $courseid): array {
-        global $DB, $PAGE, $COURSE;
+        global $DB, $PAGE;
 
-        $sql = "select * from {course_modules} where module = 16 and course = :courseid";
-        $qbanks = $DB->get_records_sql($sql, ['courseid' => $courseid]);
+        $module = $DB->get_record('modules', ['name' => 'qbank']);
+        if (!$module) {
+            return [];
+        }
+
+        $qbanks = $DB->get_records('course_modules', ['module' => $module->id, 'course' => $courseid]);
         if (empty($qbanks)) {
             $msg = get_string('noquestionbanks', 'qpractice');
             \core\notification::add($msg, \core\notification::WARNING);
             return [];
         }
 
-        $contexts = [];
-        foreach ($qbanks as $qbank) {
-            $contexts[] = \context_module::instance($qbank->id);
-        }
-
-        $cats = new question_categories(
-            $PAGE->url,
-            $contexts,
-            $COURSE->id,
-            $COURSE->id
-        );
         $categories = [];
-        $editlist = $cats->editlists;
-        foreach ($editlist as $list) {
-            $categories = array_merge($categories, $list->items);
+        foreach ($qbanks as $qbank) {
+            $cats = new question_categories($PAGE->url, null, $qbank->id);
+            $categories = array_merge($categories, $cats->editlist->items);
         }
 
         return $categories ?: [];

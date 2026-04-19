@@ -1,4 +1,10 @@
-### Moodle Question practice 1.4 October 2025
+### Moodle Question practice 1.5 Apr 2026
+
+Confirmed compatibility with Moodle 5.2
+Fixed mod_form.php get_categories() which used hardcoded module id.
+Moved from deprecated question_categories constructor to question_categories.
+
+### Moodle Question practice 1.4 Oct 2025
 
 This is the first update to the Moodle plugins database since 2016 and the functionality may have changed unexpectdly.
 
@@ -6,7 +12,7 @@ It is now has a setting to configure multiple question categories to be selected
 
 Updated to be compatible with Moodle v5 Migrated to use mustache and a Moodle 4.x style report
 
-### Moodle Question Practice 1.3 Changes June 2019
+### Moodle Question Practice 1.3 Changes Jun 2019
 - Added a top category of questions for instance setting. Thanks to Steve Gallagher and Scott Hallman for feedback on this.
 - Codechecker and PHPDoc Check conformance
 
