@@ -23,6 +23,7 @@
 export const init = () => {
 
     setupSelectAll();
+    setupOtherBanks();
 
     /**
      * Sets up event listeners for selecting all or none of the checkboxes.
@@ -36,6 +37,29 @@ export const init = () => {
             });
 
         });
+    }
+
+    /**
+     * Reveal the categories of the "other question bank" chosen from the dropdown.
+     *
+     */
+    function setupOtherBanks() {
+        const select = document.getElementById('id_otherbankselect');
+        if (!select) {
+            return;
+        }
+        const blocks = document.querySelectorAll('.qp-otherbank');
+        const update = () => {
+            blocks.forEach(block => {
+                block.hidden = true;
+            });
+            const target = document.getElementById('qp-otherbank-' + select.value);
+            if (target) {
+                target.hidden = false;
+            }
+        };
+        select.addEventListener('change', update);
+        update();
     }
 
 };

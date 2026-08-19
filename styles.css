@@ -1,24 +1,32 @@
-.qpractice .qpbtn {
+.qpractice .qpbtn{
     margin-right: 3px;
     border-radius: 5px;
     background-color: #ced4da;
     border-color: #ced4da;
 }
-.qpractice .qpbtn:hover {
+.qpractice .qpbtn:hover{
     box-shadow: 0 0 5px #7bc1f7;
 }
 
-.qpractice .question_count {
-    padding-left: 0.25em;
+.qpractice .qp-bank-name{
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color, #6c757d);
 }
-.qpractice .category_name {
-    padding-right: 0.25em;
+.qpractice .qp-category-label{
+    display: inline-block;
 }
-.qpractice label {
-    padding-right: 0.24em;
-    display: inline;
-    float: left;
+/* Tree guide line for nested (indented) categories. */
+.qpractice .qp-category-label[data-depth]:not([data-depth="0"]){
+    border-left: 1px solid var(--bs-border-color, #dee2e6);
+    margin-left: 0.5rem;
 }
-label:after {
-    content: "";
+.qpractice .question_count{
+    padding-left:0.25em;
+    color: var(--bs-secondary-color, #6c757d);
 }
+.qpractice .category_name{
+    padding-right:0.25em;
+}
+.qpractice label {padding-right:0.24em; display: inline; float: left; } label:after { content: "" }

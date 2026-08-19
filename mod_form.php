@@ -73,11 +73,50 @@ class mod_qpractice_mod_form extends moodleform_mod {
         } else {
             $currentbehaviour = '';
         }
-        $questioncategories = $this->get_categories($COURSE->id);
+        $banks = $this->get_categories($COURSE->id);
 
-        $this->add_categories($mform, $questioncategories);
+        $banks = array_values($banks);
+        if (count($banks) <= 1) {
+            // Only one bank available: show its categories directly, no dropdown needed.
+            foreach ($banks as $bank) {
+                $this->add_categories($mform, $bank->items);
+            }
+        } else {
+            // Multiple banks: a dropdown at the top of the display selects which bank's
+            // categories are shown. Only one bank is visible at a time; selecting another
+            // hides the current one. Hidden categories still remain selectable/submitted.
+            $selectedids = $this->get_selected_category_ids();
+            $preselect = 0;
+            $found = false;
+            $options = [];
+            foreach ($banks as $i => $bank) {
+                $options[$i] = $bank->name;
+                if (!$found && $this->bank_has_selected($bank->items, $selectedids)) {
+                    $preselect = $i;
+                    $found = true;
+                }
+            }
 
-        $mform->addElement('button', 'select_all_none', 'Select All/None');
+            $mform->addElement('select', 'otherbankselect', get_string('questionbank', 'qpractice'), $options);
+            $mform->setDefault('otherbankselect', $preselect);
+
+            foreach ($banks as $i => $bank) {
+                $divattrs = ['id' => 'qp-otherbank-' . $i, 'class' => 'qp-otherbank'];
+                if ($i !== $preselect) {
+                    $divattrs['hidden'] = 'hidden';
+                }
+                $mform->addElement('html', html_writer::start_tag('div', $divattrs));
+                $this->add_categories($mform, $bank->items);
+                $mform->addElement('html', html_writer::end_tag('div'));
+            }
+        }
+
+        $mform->addElement(
+            'button',
+            'select_all_none',
+            get_string('selectallnone', 'qpractice'),
+            ['class' => 'qpbtn']
+        );
 
         $mform->addElement('header', 'qpracticefieldset', get_string('behaviours', 'qpractice'));
 
@@ -98,40 +137,130 @@ class mod_qpractice_mod_form extends moodleform_mod {
     }
 
     /**
-     * Return all question categories within the given course context.
+     * Return the selectable question categories, grouped by question bank.
+     *
+     * Includes the question banks in the given course plus any shareable banks
+     * the user may use that live within this course's category hierarchy (or at
+     * site level). Each returned bank carries its full category tree so the tree
+     * can be rendered with question counts and descriptions.
      *
      * @param int $courseid The course id to fetch categories for.
-     * @return array List of categories (stdClass) indexed by id.
+     * @return array List of banks, each a stdClass with ->name and ->items (category tree).
      */
     public function get_categories(int $courseid): array {
-        global $DB, $PAGE, $COURSE;
+        global $DB, $PAGE;
 
-        $sql = "select * from {course_modules} where module = 16 and course = :courseid";
-        $qbanks = $DB->get_records_sql($sql, ['courseid' => $courseid]);
-        if (empty($qbanks)) {
+        $module = $DB->get_record('modules', ['name' => 'qbank']);
+        if (!$module) {
+            return [];
+        }
+
+        // Collect candidate qbank course-module ids, mapped to whether the bank is
+        // "shared" (from another context). This course's own banks come first and
+        // are not shared, so they display up front.
+        $cmids = [];
+        $localbanks = $DB->get_records(
+            'course_modules',
+            ['module' => $module->id, 'course' => $courseid, 'deletioninprogress' => 0]
+        );
+        foreach ($localbanks as $cm) {
+            $cmids[$cm->id] = false;
+        }
+
+        // ...then shareable banks the user may use, limited to this course's
+        // category ancestry (or site-level shared resources).
+        $allowedcats = $this->get_category_ancestry($courseid);
+        $sharedbanks = \core_question\local\bank\question_bank_helper::get_activity_instances_with_shareable_questions(
+            havingcap: ['moodle/question:useall'],
+        );
+        foreach ($sharedbanks as $bank) {
+            $bankcourse = $bank->cminfo->get_course();
+            if (
+                ($bankcourse->id == SITEID || isset($allowedcats[$bankcourse->category]))
+                    && !isset($cmids[$bank->cminfo->id])
+            ) {
+                $cmids[$bank->cminfo->id] = true;
+            }
+        }
+
+        if (empty($cmids)) {
             $msg = get_string('noquestionbanks', 'qpractice');
             \core\notification::add($msg, \core\notification::WARNING);
             return [];
         }
 
-        $contexts = [];
-        foreach ($qbanks as $qbank) {
-            $contexts[] = \context_module::instance($qbank->id);
+        // Build the full category tree (with counts and descriptions) for each bank.
+        $banks = [];
+        foreach ($cmids as $cmid => $shared) {
+            $cats = new question_categories($PAGE->url, null, $cmid);
+            if (empty($cats->editlist->items)) {
+                continue;
+            }
+            $cm = get_coursemodule_from_id('qbank', $cmid);
+            $banks[] = (object) [
+                'name' => format_string($cm->name),
+                'items' => $cats->editlist->items,
+                'shared' => $shared,
+            ];
         }
 
-        $cats = new question_categories(
-            $PAGE->url,
-            $contexts,
-            $COURSE->id,
-            $COURSE->id
-        );
-        $categories = [];
-        $editlist = $cats->editlists;
-        foreach ($editlist as $list) {
-            $categories = array_merge($categories, $list->items);
-        }
+        return $banks;
+    }
 
-        return $categories ?: [];
+    /**
+     * Return the given course's category id and all of its ancestor category ids.
+     *
+     * @param int $courseid The course id.
+     * @return array Set of category ids, keyed by id, that make up the ancestry.
+     */
+    protected function get_category_ancestry(int $courseid): array {
+        global $DB;
+
+        $catid = (int) $DB->get_field('course', 'category', ['id' => $courseid]);
+        $ancestry = [];
+        if ($catid) {
+            $ancestry[$catid] = $catid;
+            $cat = \core_course_category::get($catid, IGNORE_MISSING);
+            if ($cat) {
+                foreach ($cat->get_parents() as $parentid) {
+                    $ancestry[$parentid] = $parentid;
+                }
+            }
+        }
+        return $ancestry;
+    }
+
+    /**
+     * Return the question category ids already selected for this instance.
+     *
+     * @return array List of selected category ids (empty when creating a new instance).
+     */
+    protected function get_selected_category_ids(): array {
+        global $DB;
+
+        if (empty($this->_instance)) {
+            return [];
+        }
+        return $DB->get_fieldset_select('qpractice_categories', 'categoryid', 'qpracticeid = ?', [$this->_instance]);
+    }
+
+    /**
+     * Recursively check whether a bank's category tree contains any selected category.
+     *
+     * @param array $items The category tree items.
+     * @param array $selectedids The selected category ids.
+     * @return bool True if any category (at any depth) is selected.
+     */
+    protected function bank_has_selected(array $items, array $selectedids): bool {
+        foreach ($items as $c) {
+            if (in_array($c->id, $selectedids)) {
+                return true;
+            }
+            if (isset($c->children) && $this->bank_has_selected($c->children, $selectedids)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -149,19 +278,33 @@ class mod_qpractice_mod_form extends moodleform_mod {
                 continue;
             }
 
-            $name = '';
-            for ($i = 0; $i < $depth; $i++) {
-                $name .= '&nbsp;&nbsp;&nbsp;&nbsp;';
+            $nameattrs = ['class' => 'category_name'];
+            // Show the category description (if any) as a hover tooltip.
+            if (!empty($c->info)) {
+                $description = content_to_text(
+                    format_text($c->info, $c->infoformat ?? FORMAT_HTML, ['context' => $this->context]),
+                    false
+                );
+                if ($description !== '') {
+                    $nameattrs['title'] = $description;
+                }
             }
-
-            $name  .= $c->name . ' (' . $c->questioncount . ')';
-            $mform->addElement('advcheckbox', "categories[$c->id]", null, $name, ['bidden' => true]);
+            $labelattrs = ['class' => 'qp-category-label', 'data-depth' => $depth];
+            if ($depth > 0) {
+                // Indent proportionally to tree depth (scales beyond Bootstrap's capped ps-* utilities).
+                $labelattrs['style'] = 'padding-left: ' . ($depth * 1.5) . 'rem;';
+            }
+            $label = html_writer::span(
+                html_writer::span($c->name, '', $nameattrs)
+                    . html_writer::span('(' . $c->questioncount . ')', 'question_count'),
+                '',
+                $labelattrs
+            );
+            $mform->addElement('advcheckbox', "categories[$c->id]", null, $label);
             if (isset($c->children)) {
                 $depth++;
                 $this->add_categories($mform, $c->children, $depth);
                 $depth--;
-            } else {
-                $depth = 0;
             }
         }
     }
