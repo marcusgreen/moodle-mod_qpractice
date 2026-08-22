@@ -24,18 +24,22 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['answered'] = 'Answered';
 $string['atleastonecategory'] = 'At least one category must be selected';
+$string['attemptprogress'] = 'Your progress';
 $string['backurl'] = 'Go back to main page';
 $string['behaviour'] = 'Behaviour';
 $string['behaviourandcategories'] = 'Behaviour and categories';
 $string['behaviours'] = 'Behaviours';
 $string['categories'] = 'Categories';
 $string['category'] = 'Category';
+$string['categorybreakdown'] = 'Score by category';
 $string['categoryname'] = 'Category name';
 $string['categoryselect'] = 'Categories';
 $string['categoryselect_help'] = 'Select from question categories. The number shows the count of questions available';
 $string['categoryselected'] = 'Topic Selected';
 $string['continueurl'] = 'Continue last session';
+$string['correct'] = 'Correct';
 $string['createsessions'] = 'Create a new session';
 $string['createurl'] = 'Create a new session';
 $string['error:atleastonecategory'] = 'At least one category must be selected';
@@ -53,6 +57,7 @@ $string['nopermission'] = 'You do not have permission to view this';
 $string['noquestionbanks'] = 'No question banks/categories found';
 $string['normalpractice'] = 'Normal Practice';
 $string['pastsessions'] = 'Past Sessions';
+$string['percentage'] = 'Percentage';
 $string['pluginadministration'] = 'Question Practice administration';
 $string['pluginname'] = 'Question Practice';
 $string['pluginname_help'] = 'The Question Practice activity enables a teacher to create instances comprising questions of various types. The practice created by teacher can

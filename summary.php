@@ -85,6 +85,7 @@ $output = $PAGE->get_renderer('mod_qpractice');
 
 echo $OUTPUT->header();
 echo $output->summary_table($sessionid);
+echo $output->category_breakdown_table($sessionid);
 
 // Add link to session categories report.
 $reporturl = new moodle_url('/mod/qpractice/report_by_category.php', ['sessionid' => $sessionid, 'cmid' => $cm->id]);

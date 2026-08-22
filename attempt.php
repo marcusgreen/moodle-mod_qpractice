@@ -119,6 +119,9 @@ $PAGE->set_heading($title);
 $PAGE->set_context($context);
 echo $OUTPUT->header();
 
+$output = $PAGE->get_renderer('mod_qpractice');
+echo $output->attempt_progress($sessionid, $quba);
+
 // Start the question form.
 
 $html = html_writer::start_tag(
