@@ -192,7 +192,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         // Build the full category tree (with counts and descriptions) for each bank.
         $banks = [];
         foreach ($cmids as $cmid => $shared) {
-            $cats = new question_categories($PAGE->url, null, $cmid);
+            $cats = new question_categories($PAGE->url, cmid: $cmid);
             if (empty($cats->editlist->items)) {
                 continue;
             }
