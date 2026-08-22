@@ -47,6 +47,7 @@ $string['modulenameplural'] = 'Question Practices';
 $string['nextquestion'] = 'View next question';
 $string['nomorequestions'] = 'Sorry, no more questions to display. Try a different category';
 $string['noofquestionsright'] = 'No. of questions right';
+$string['nocategoriesselected'] = 'You must select at least one category';
 $string['noofquestionsviewed'] = 'No. of Questions viewed';
 $string['nopermission'] = 'You do not have permission to view this';
 $string['noquestionbanks'] = 'No question banks/categories found';

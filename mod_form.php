@@ -317,18 +317,9 @@ class mod_qpractice_mod_form extends moodleform_mod {
      */
     public function data_preprocessing(&$toform) {
         if (isset($toform['behaviour'])) {
-            $reviewfields = [];
-            $reviewfields = explode(',', $toform['behaviour']);
-            $behaviours = question_engine::get_behaviour_options(null);
-            foreach ($behaviours as $key => $langstring) {
-                foreach ($reviewfields as $field => $used) {
-                    if ($key == $used) {
-                        $toform['behaviour[' . $key . ']'] = 1;
-                        break;
-                    } else {
-                        $toform['behaviour[' . $key . ']'] = 0;
-                    }
-                }
+            $used = explode(',', $toform['behaviour']);
+            foreach (array_keys(question_engine::get_behaviour_options(null)) as $key) {
+                $toform['behaviour[' . $key . ']'] = in_array($key, $used) ? 1 : 0;
             }
         }
     }
@@ -348,13 +339,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
 
         $categories = $DB->get_records('qpractice_categories', ['qpracticeid' => $defaultvalues->id]);
         foreach ($categories as $c) {
-            $parent = $DB->get_record('question_categories', ['id' => $c->categoryid]);
-            $elid = 'id_categories_' . $c->categoryid . '_parent_' . $parent->parent;
             $elid = "categories[$c->categoryid]";
-            $elid = "id_category_$c->categoryid";
-            $elid = "categories[$c->categoryid]";
-            $el = $mform->getElement($elid);
-            $el->setChecked(true);
+            // Skip saved categories that are no longer rendered (deleted, or in a
+            // bank the user can no longer access) so the form does not fatal.
+            if ($mform->elementExists($elid)) {
+                $mform->getElement($elid)->setChecked(true);
+            }
         }
         parent::set_data($defaultvalues);
     }
@@ -370,12 +360,14 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        $hasvalues = array_filter($data, function ($data) {
-            return $data != 0;
+        // Only inspect the category checkboxes, not the whole submission.
+        $selected = array_filter($data['categories'] ?? [], function ($checked) {
+            return $checked != 0;
         });
 
-        if (!$hasvalues) {
-            $errors['categories'] = 'No categories selected';
+        if (!$selected) {
+            // Anchor the error to the always-present button that sits under the list.
+            $errors['select_all_none'] = get_string('nocategoriesselected', 'qpractice');
         }
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
