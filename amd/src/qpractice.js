@@ -30,7 +30,11 @@ export const init = () => {
      *
      */
     function setupSelectAll() {
-        document.getElementById('id_select_all_none').addEventListener('click', function() {
+        const button = document.getElementById('id_select_all_none');
+        if (!button) {
+            return;
+        }
+        button.addEventListener('click', function() {
             const checkboxes = document.querySelectorAll(`[id^="id_categories"]`);
             checkboxes.forEach(checkbox =>{
                 checkbox.checked = !checkbox.checked;

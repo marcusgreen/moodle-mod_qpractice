@@ -112,8 +112,8 @@ class mod_qpractice_renderer extends plugin_renderer_base {
             $row->count++;
             $row->maxmarks += $quba->get_question_max_mark($slot);
             $row->marks += ($mark ?? 0);
-            // "Correct" means any credit (fraction > 0), matching how the session
-            // running totals count a right answer. Partial credit counts.
+            // Any credit (fraction > 0) counts as correct, matching how the
+            // session running totals count a right answer. Partial credit counts.
             if ($quba->get_question_fraction($slot) > 0) {
                 $row->right++;
             }
