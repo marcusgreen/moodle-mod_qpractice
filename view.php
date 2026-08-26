@@ -66,30 +66,61 @@ $createtext = get_string('createurl', 'qpractice');
 $reporturl = new moodle_url('/mod/qpractice/report.php', ['id' => $cm->id]);
 $reporttext = get_string('reporturl', 'qpractice');
 
-echo $OUTPUT->header();
-
-if ($canview) {
-    echo html_writer::start_tag('div', ['id' => 'buttons', 'class' => 'row']);
-    echo $OUTPUT->single_button($createurl, $createtext, 'get', ['class' => 'btn text-left col-sm-3 ']);
-
-    if (
-        $qpractice = $DB->get_records('qpractice_session', ['userid' => $USER->id,
-        'qpracticeid' => $cm->instance], 'id desc', '*', '0', '1')
-    ) {
-        $qpractice = array_values($qpractice);
-
-        echo $OUTPUT->single_button($reporturl, $reporttext, 'get', ['class' => 'btn  text-left col-sm-4']);
-
-        if ($qpractice[0]->status == 'inprogress') {
-            $continueurl = new moodle_url('/mod/qpractice/attempt.php', ['id' => $qpractice[0]->id]);
-            $continuetext = get_string('continueurl', 'qpractice');
-            echo html_writer::link($continueurl, $continuetext);
-        }
-    }
-    echo html_writer::end_tag('div');
-} else {
+if (!$canview) {
     throw new moodle_exception(get_string('nopermission', 'qpractice'));
 }
+
+// Look for the most recent session for this user.
+$sessions = $DB->get_records('qpractice_session', [
+    'userid' => $USER->id,
+    'qpracticeid' => $cm->instance,
+], 'id desc', '*', '0', '1');
+$latestsession = $sessions ? reset($sessions) : null;
+$inprogress = $latestsession && $latestsession->status == 'inprogress';
+
+$actions = [];
+
+// Continue an unfinished session (primary action when present).
+if ($inprogress) {
+    $continueurl = new moodle_url('/mod/qpractice/attempt.php', ['id' => $latestsession->id]);
+    $actions[] = [
+        'url' => $continueurl->out(false),
+        'title' => get_string('continueurl', 'qpractice'),
+        'description' => get_string('continueurl_desc', 'qpractice'),
+        'icon' => $OUTPUT->pix_icon('i/return', '', 'moodle', ['class' => 'qpractice-action-icon']),
+        'btnclass' => 'btn-primary',
+    ];
+}
+
+// Start a new session.
+$actions[] = [
+    'url' => $createurl->out(false),
+    'title' => $createtext,
+    'description' => get_string('createurl_desc', 'qpractice'),
+    'icon' => $OUTPUT->pix_icon('t/add', '', 'moodle', ['class' => 'qpractice-action-icon']),
+    'btnclass' => $inprogress ? 'btn-secondary' : 'btn-primary',
+];
+
+// View past sessions (only if the user has run at least one).
+if ($latestsession) {
+    $actions[] = [
+        'url' => $reporturl->out(false),
+        'title' => $reporttext,
+        'description' => get_string('reporturl_desc', 'qpractice'),
+        'icon' => $OUTPUT->pix_icon('i/report', '', 'moodle', ['class' => 'qpractice-action-icon']),
+        'btnclass' => 'btn-secondary',
+    ];
+}
+
+$templatecontext = [
+    'intro' => trim(strip_tags($qpractice->intro))
+        ? format_module_intro('qpractice', $qpractice, $cm->id)
+        : '',
+    'actions' => $actions,
+];
+
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('mod_qpractice/view', $templatecontext);
 
 // Finish the page.
 echo $OUTPUT->footer();

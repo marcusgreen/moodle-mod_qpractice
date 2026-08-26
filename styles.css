@@ -8,6 +8,28 @@
     box-shadow: 0 0 5px #7bc1f7;
 }
 
+/* View page action cards. */
+.qpractice-actions{
+    margin-top: 1rem;
+}
+.qpractice-action-card{
+    border-radius: 0.5rem;
+    transition: box-shadow 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+.qpractice-action-card:hover{
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+.qpractice-action-card .qpractice-action-icon{
+    width: 2.5rem;
+    height: 2.5rem;
+    opacity: 0.85;
+}
+.qpractice-action-card .btn{
+    align-self: center;
+    min-width: 60%;
+}
+
 .qpractice .qp-bank-name{
     margin-top: 0.75rem;
     margin-bottom: 0.25rem;

@@ -12,13 +12,13 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Moodle. If not, see
-    <http: //www.gnu.org/licenses />.
-    }}
-    {{!
-    @template plugintype_pluginname/template_name
+    along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_qpractice/view
 
-    Template purpose and description.
+    Landing page for a Question Practice activity: a row of action cards
+    (continue / start / past sessions).
 
     Classes required for JS:
     * none
@@ -27,28 +27,42 @@
     * none
 
     Context variables required for this template:
-    * none
+    * intro string Optional formatted activity introduction HTML.
+    * actions array List of action cards.
+      * url string Destination URL.
+      * title string Card heading and button label.
+      * description string Short supporting text.
+      * icon string Rendered pix icon HTML.
+      * btnclass string Bootstrap button variant class (e.g. btn-primary).
 
     Example context (json):
     {
+        "intro": "<p>Practise your exam questions.</p>",
+        "actions": [
+            {
+                "url": "https://example.com/mod/qpractice/startattempt.php?id=1",
+                "title": "Create a new session",
+                "description": "Pick topics and question types, then start practising.",
+                "icon": "<i class=\"icon fa fa-plus\"></i>",
+                "btnclass": "btn-primary"
+            }
+        ]
     }
-
-    }}
-
-<div class="d-grid">
-        <div class="row">
-          <div class="col-1 pl-3 pt-1">
-          <a href="{{ createurl }}" class="btn btn-outline-secondary btn-sm text-nowrap" role="button">
-            {{# str}} createurl, qpractice {{/ str}}
-        </a>
-    </div>
-
-        </div>
-        <div class="row">
-            <div class="col-1 pl-3 pt-1">
-            <a href="{{ continueurl }}" class="btn btn-outline-secondary btn-sm text-nowrap" role="button">
-                {{# str}} continueurl, qpractice {{/ str}}
-            </a>
+}}
+{{#intro}}
+    <div class="generalbox qpractice-intro">{{{intro}}}</div>
+{{/intro}}
+<div id="buttons" class="qpractice-actions row">
+    {{#actions}}
+        <div class="col-12 col-md-4 mb-3">
+            <div class="card h-100 qpractice-action-card">
+                <div class="card-body d-flex flex-column text-center">
+                    <div class="mb-2">{{{icon}}}</div>
+                    <h5 class="card-title">{{title}}</h5>
+                    <p class="card-text text-muted small flex-grow-1">{{description}}</p>
+                    <a href="{{url}}" class="btn {{btnclass}} mt-auto" role="button">{{title}}</a>
+                </div>
             </div>
         </div>
+    {{/actions}}
 </div>
