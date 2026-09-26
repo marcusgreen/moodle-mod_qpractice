@@ -74,6 +74,7 @@ class provider implements
             'currentsortorder' => 'privacy:metadata:qpractice_user_path_progress:currentsortorder',
             'stagecorrect' => 'privacy:metadata:qpractice_user_path_progress:stagecorrect',
             'stagetotal' => 'privacy:metadata:qpractice_user_path_progress:stagetotal',
+            'stageanswered' => 'privacy:metadata:qpractice_user_path_progress:stageanswered',
             'timemodified' => 'privacy:metadata:qpractice_user_path_progress:timemodified',
         ], 'privacy:metadata:qpractice_user_path_progress');
 
@@ -180,6 +181,7 @@ class provider implements
                     'currentsortorder' => $progress->currentsortorder,
                     'stagecorrect' => $progress->stagecorrect,
                     'stagetotal' => $progress->stagetotal,
+                    'stageanswered' => $progress->stageanswered,
                     'timemodified' => transform::datetime($progress->timemodified),
                 ]);
             }

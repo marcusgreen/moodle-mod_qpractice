@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/qpractice/db" VERSION="2026091400" COMMENT="XMLDB file for Moodle mod/qpractice"
+<XMLDB PATH="mod/qpractice/db" VERSION="2026092600" COMMENT="XMLDB file for Moodle mod/qpractice"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -79,6 +79,7 @@
         <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Question category for this stage"/>
         <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0-based position of this stage in the path"/>
         <FIELD NAME="targetpercent" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Percentage correct required to advance past this stage, null on the final stage"/>
+        <FIELD NAME="minquestions" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questions a student must answer on this stage before the target can move them on, 0 for no minimum"/>
         <FIELD NAME="onachieve" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="nextstage" SEQUENCE="false" COMMENT="What happens when targetpercent is reached: nextstage or stay"/>
       </FIELDS>
       <KEYS>
@@ -97,6 +98,7 @@
         <FIELD NAME="currentsortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="sortorder of the stage the user is currently on"/>
         <FIELD NAME="stagecorrect" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="Marks obtained so far on the current stage"/>
         <FIELD NAME="stagetotal" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="Marks available so far on the current stage"/>
+        <FIELD NAME="stageanswered" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questions answered so far on the current stage"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

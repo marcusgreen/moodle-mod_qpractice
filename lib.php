@@ -133,13 +133,17 @@ function upsert_category_path(stdClass $qpractice) {
         if ($categoryid <= 0) {
             continue;
         }
-        $target = $qpractice->pathstagetarget[$i] ?? '';
+        $onachieve = $qpractice->pathstageonachieve[$i] ?? 'nextstage';
+        // A stage that stays put never uses its target, and the form hides it.
+        $target = $onachieve === 'stay' ? '' : ($qpractice->pathstagetarget[$i] ?? '');
+        $minquestions = $onachieve === 'stay' ? 0 : (int) ($qpractice->pathstageminquestions[$i] ?? 0);
         $recordstoinsert[] = (object) [
             'qpracticeid' => $qpractice->id,
             'categoryid' => $categoryid,
             'sortorder' => $sortorder++,
             'targetpercent' => $target === '' ? null : (int) $target,
-            'onachieve' => $qpractice->pathstageonachieve[$i] ?? 'nextstage',
+            'minquestions' => max(0, $minquestions),
+            'onachieve' => $onachieve,
         ];
     }
 

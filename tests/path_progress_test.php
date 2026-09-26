@@ -41,9 +41,10 @@ final class path_progress_test extends \advanced_testcase {
      * Set up a path-mode qpractice instance with two stages: stage 0 (category A,
      * target 50%) and stage 1 (category B, no target, final stage).
      *
+     * @param int $minquestions Minimum questions answered on stage 0 before it can advance.
      * @return array [qpracticeid, categoryid A, categoryid B]
      */
-    private function setup_two_stage_path(): array {
+    private function setup_two_stage_path(int $minquestions = 0): array {
         global $SITE, $DB;
 
         $qpracticegenerator = $this->getDataGenerator()->get_plugin_generator('mod_qpractice');
@@ -55,6 +56,7 @@ final class path_progress_test extends \advanced_testcase {
             'categoryid' => 101,
             'sortorder' => 0,
             'targetpercent' => 50,
+            'minquestions' => $minquestions,
             'onachieve' => 'nextstage',
         ]);
         $DB->insert_record('qpractice_category_path', (object) [
@@ -120,6 +122,28 @@ final class path_progress_test extends \advanced_testcase {
         $progress = $DB->get_record('qpractice_user_path_progress', ['qpracticeid' => $qpracticeid, 'userid' => 2]);
         $this->assertEquals(0, $progress->stagecorrect);
         $this->assertEquals(0, $progress->stagetotal);
+        $this->assertEquals(0, $progress->stageanswered);
+    }
+
+    /**
+     * Meeting the target does not advance the student until they have answered the
+     * stage's minimum number of questions.
+     *
+     * @covers ::qpractice_record_path_answer
+     */
+    public function test_minimum_questions_delays_advance(): void {
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        [$qpracticeid, $categorya, $categoryb] = $this->setup_two_stage_path(3);
+
+        // Two correct answers: 100%, above the 50% target, but only 2 of the 3 required.
+        $this->assertFalse(qpractice_record_path_answer($qpracticeid, 2, 1, 1));
+        $this->assertFalse(qpractice_record_path_answer($qpracticeid, 2, 1, 1));
+        $this->assertEquals($categorya, qpractice_current_path_category($qpracticeid, 2));
+
+        // Third answer, wrong: 2/3 is still above target and the minimum is now met.
+        $this->assertTrue(qpractice_record_path_answer($qpracticeid, 2, 0, 1));
+        $this->assertEquals($categoryb, qpractice_current_path_category($qpracticeid, 2));
     }
 
     /**

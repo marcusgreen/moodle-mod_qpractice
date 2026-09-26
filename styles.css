@@ -52,3 +52,64 @@
     padding-right:0.25em;
 }
 .qpractice label {padding-right:0.24em; display: inline; float: left; } label:after { content: "" }
+
+/* Category path stages on the settings form: separate each stage (after the first) visually. */
+#page-mod-qpractice-mod [id^="fitem_id_pathstagedelete_"] ~ [id^="fitem_id_pathstageheading_"] {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+#page-mod-qpractice-mod [id^="fitem_id_pathstageheading_"] .col-form-label {
+    font-weight: bold;
+}
+
+/* Stage category autocomplete: show the category tree. */
+/* Inline-block, not block: a block would leave the whitespace around it in the <li>
+   as an extra empty line. */
+.form-autocomplete-suggestions .qp-catopt {
+    display: inline-block;
+    padding-left: calc(var(--qp-catdepth, 0) * 1.25rem);
+}
+/* The single-select autocomplete adds a blank option; the selection's × clears instead.
+   !important because the autocomplete's filtering sets display inline. */
+#page-mod-qpractice-mod [id^="fitem_id_pathstagecategory_"] .form-autocomplete-suggestions li[data-value=""] {
+    display: none !important; /* stylelint-disable-line declaration-no-important */
+}
+.form-autocomplete-suggestions .qp-catopt-guide {
+    color: var(--bs-secondary-color, #6c757d);
+    margin-right: 0.35rem;
+}
+.qp-catopt-count,
+.qp-catopt-empty {
+    color: var(--bs-secondary-color, #6c757d);
+}
+.form-autocomplete-suggestions .qp-catopt-empty .qp-catopt-name {
+    font-style: italic;
+}
+/* In the list the path is implied by the indentation, but kept (visually hidden) so
+   searching for a parent also finds the categories under it. */
+.form-autocomplete-suggestions .qp-catopt-path {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+/* Top-level categories show which bank they are in. */
+.form-autocomplete-suggestions .qp-catopt-top .qp-catopt-path {
+    position: static;
+    width: auto;
+    height: auto;
+    clip: auto;
+    margin-left: 0.5rem;
+    font-size: 0.85em;
+    color: var(--bs-secondary-color, #6c757d);
+}
+/* Once selected, show the name and its full path. */
+.form-autocomplete-selection .qp-catopt-guide {
+    display: none;
+}
+.form-autocomplete-selection .qp-catopt-path::before {
+    content: "— ";
+}

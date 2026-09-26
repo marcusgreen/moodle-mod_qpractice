@@ -120,5 +120,25 @@ function xmldb_qpractice_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2026091800, 'qpractice');
     }
 
+    if ($oldversion < 2026092600) {
+        // Define field minquestions to be added to qpractice_category_path.
+        $table = new xmldb_table('qpractice_category_path');
+        $field = new xmldb_field('minquestions', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'targetpercent');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field stageanswered to be added to qpractice_user_path_progress.
+        $table = new xmldb_table('qpractice_user_path_progress');
+        $field = new xmldb_field('stageanswered', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'stagetotal');
+
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        upgrade_mod_savepoint(true, 2026092600, 'qpractice');
+    }
+
     return true;
 }

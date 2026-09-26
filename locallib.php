@@ -429,6 +429,7 @@ function qpractice_get_or_create_path_progress(int $qpracticeid, int $userid): ?
         'currentsortorder' => $stages[0]->sortorder,
         'stagecorrect' => 0,
         'stagetotal' => 0,
+        'stageanswered' => 0,
         'timemodified' => time(),
     ];
     $progress->id = $DB->insert_record('qpractice_user_path_progress', $progress);
@@ -459,7 +460,8 @@ function qpractice_current_path_category(int $qpracticeid, int $userid): ?int {
 
 /**
  * Record the outcome of one answered question against the student's current path stage,
- * and advance them to the next stage if their running percentage now meets its target.
+ * and advance them to the next stage if their running percentage now meets its target
+ * and they have answered at least the stage's minimum number of questions.
  *
  * @param int $qpracticeid
  * @param int $userid
@@ -491,6 +493,7 @@ function qpractice_record_path_answer(int $qpracticeid, int $userid, float $obta
 
     $progress->stagecorrect += $obtainedmarks;
     $progress->stagetotal += $maxmarks;
+    $progress->stageanswered++;
     $progress->timemodified = time();
 
     $advanced = false;
@@ -500,11 +503,13 @@ function qpractice_record_path_answer(int $qpracticeid, int $userid, float $obta
         && $stage->onachieve === 'nextstage'
         && $nextstage
         && $progress->stagetotal > 0
+        && $progress->stageanswered >= $stage->minquestions
         && ($progress->stagecorrect / $progress->stagetotal * 100) >= $stage->targetpercent
     ) {
         $progress->currentsortorder = $nextstage->sortorder;
         $progress->stagecorrect = 0;
         $progress->stagetotal = 0;
+        $progress->stageanswered = 0;
         $advanced = true;
     }
 
