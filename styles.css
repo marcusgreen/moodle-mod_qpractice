@@ -54,7 +54,7 @@
 .qpractice label {padding-right:0.24em; display: inline; float: left; } label:after { content: "" }
 
 /* Category path stages on the settings form: separate each stage (after the first) visually. */
-#page-mod-qpractice-mod [id^="fitem_id_pathstagedelete_"] ~ [id^="fitem_id_pathstageheading_"] {
+#page-mod-qpractice-mod [id^="fgroup_id_pathstageactions_"] ~ [id^="fitem_id_pathstageheading_"] {
     border-top: 1px solid var(--bs-border-color, #dee2e6);
     margin-top: 1rem;
     padding-top: 1rem;

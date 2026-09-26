@@ -49,3 +49,18 @@ Feature: Edit category path stages
     And I should not see "Stage 2"
     When I set the field "Enable category path" to "0"
     Then I should not see "Stage 1"
+
+  @javascript
+  Scenario: Stages can be moved up and down
+    Given I am on the "QPracticeTest" "qpractice activity editing" page logged in as "teacher1"
+    When I set the field "Enable category path" to "1"
+    And I press "Add stage"
+    And I press "Add stage"
+    Then the "Move stage 1 up" "button" should be disabled
+    And the "Move stage 3 down" "button" should be disabled
+    And the "Move stage 2 up" "button" should be enabled
+    When I set the field "Stage 1 target to advance (%)" to "20"
+    And I set the field "Stage 2 target to advance (%)" to "30"
+    And I press "Move stage 1 down"
+    Then the field "Stage 1 target to advance (%)" matches value "30"
+    And the field "Stage 2 target to advance (%)" matches value "20"

@@ -432,6 +432,10 @@ class mod_qpractice_mod_form extends moodleform_mod {
             }
         }
 
+        // These buttons reload the form rather than saving it. repeat_elements() only marks a
+        // top-level remove button this way, and ours is in a group.
+        $noskip = ['onclick' => 'skipClientValidation = true;', 'data-skip-validation' => 1, 'data-no-submit' => 1];
+
         // Labels are placeholders here; they are numbered in relabel_path_stages() once
         // we know which stages survived any "Remove stage" clicks.
         $repeatarray = [
@@ -445,7 +449,34 @@ class mod_qpractice_mod_form extends moodleform_mod {
             $mform->createElement('text', 'pathstagetarget', '', ['size' => 3]),
             $mform->createElement('text', 'pathstageminquestions', '', ['size' => 3]),
             $mform->createElement('select', 'pathstageonachieve', '', $onachieveoptions),
-            $mform->createElement('submit', 'pathstagedelete', '', [], false),
+            // All of a stage's buttons on one row. repeat_elements() finds the remove button
+            // by name, so it still works inside the group.
+            $mform->createElement('group', 'pathstageactions', '', [
+                $mform->createElement(
+                    'submit',
+                    'pathstagemoveup',
+                    get_string('pathmoveup', 'qpractice'),
+                    $noskip,
+                    false,
+                    ['customclassoverride' => 'btn-outline-secondary']
+                ),
+                $mform->createElement(
+                    'submit',
+                    'pathstagemovedown',
+                    get_string('pathmovedown', 'qpractice'),
+                    $noskip,
+                    false,
+                    ['customclassoverride' => 'btn-outline-secondary']
+                ),
+                $mform->createElement(
+                    'submit',
+                    'pathstagedelete',
+                    '',
+                    $noskip,
+                    false,
+                    ['customclassoverride' => 'btn-outline-danger']
+                ),
+            ], ' ', false),
         ];
         $repeatoptions = [
             'pathstagecategory' => ['type' => PARAM_INT],
@@ -505,7 +536,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
                 $fields = ['pathstagecategory'];
                 $mform->insertElementBefore(
                     $mform->createElement('static', "pathstagefinal[$i]", '', get_string('pathstagefinal', 'qpractice')),
-                    "pathstagedelete[$i]"
+                    "pathstageactions[$i]"
                 );
                 $mform->hideIf("pathstagefinal[$i]", 'pathmode', 'notchecked');
             } else {
@@ -519,10 +550,74 @@ class mod_qpractice_mod_form extends moodleform_mod {
             foreach ($fields as $name) {
                 $mform->getElement("{$name}[$i]")->setLabel(get_string($name, 'qpractice', $stageno));
             }
-            $mform->getElement("pathstagedelete[$i]")->setValue(get_string('pathremovestage', 'qpractice', $stageno));
+            $mform->registerNoSubmitButton("pathstagemoveup[$i]");
+            $mform->registerNoSubmitButton("pathstagemovedown[$i]");
+            foreach ($mform->getElement("pathstageactions[$i]")->getElements() as $button) {
+                if ($button->getName() === "pathstagedelete[$i]") {
+                    $button->setValue(get_string('pathremovestage', 'qpractice', $stageno));
+                    continue;
+                }
+                $up = $button->getName() === "pathstagemoveup[$i]";
+                $arialabel = get_string($up ? 'pathmoveupstage' : 'pathmovedownstage', 'qpractice', $stageno);
+                $button->updateAttributes(['aria-label' => $arialabel, 'title' => $arialabel]);
+                // The first stage can't move up, nor the last down.
+                if (($up && $position === 0) || (!$up && $i === $lastindex)) {
+                    $button->updateAttributes(['disabled' => 'disabled']);
+                }
+            }
 
-            foreach (array_merge(['pathstageheading', 'pathstagedelete'], $fields) as $name) {
+            foreach (array_merge(['pathstageheading', 'pathstageactions'], $fields) as $name) {
                 $mform->hideIf("{$name}[$i]", 'pathmode', 'notchecked');
+            }
+        }
+    }
+
+    /**
+     * Apply a "Move up" / "Move down" click once the submitted values are loaded.
+     *
+     * @return void
+     */
+    public function definition_after_data() {
+        parent::definition_after_data();
+        $this->move_path_stage();
+    }
+
+    /**
+     * Swap a stage with its neighbour when its "Move up" or "Move down" button was pressed.
+     *
+     * The form layout is by position, so this swaps the submitted values rather than the
+     * elements. The final stage has no target fields, so moving into or out of last place
+     * swaps only the category; the targets stay with their position.
+     *
+     * @return void
+     */
+    protected function move_path_stage(): void {
+        $mform = $this->_form;
+        $up = optional_param_array('pathstagemoveup', [], PARAM_RAW);
+        $down = optional_param_array('pathstagemovedown', [], PARAM_RAW);
+        $pressed = array_key_first($up) ?? array_key_first($down);
+        if ($pressed === null || !$mform->elementExists("pathstageheading[$pressed]")) {
+            return;
+        }
+
+        // Stages still on the form, in order; removed ones leave gaps in the indexes.
+        $indexes = array_values(array_filter(
+            range(0, (int) $mform->getElement('pathstagerepeats')->getValue() - 1),
+            fn($i) => $mform->elementExists("pathstageheading[$i]")
+        ));
+        $position = array_search($pressed, $indexes);
+        $other = $indexes[$position + ($up ? -1 : 1)] ?? null;
+        if ($other === null) {
+            return;
+        }
+
+        foreach (['pathstagecategory', 'pathstagetarget', 'pathstageminquestions', 'pathstageonachieve'] as $name) {
+            if ($mform->elementExists("{$name}[$pressed]") && $mform->elementExists("{$name}[$other]")) {
+                $a = $mform->getElement("{$name}[$pressed]");
+                $b = $mform->getElement("{$name}[$other]");
+                $value = $a->getValue();
+                $a->setValue($b->getValue());
+                $b->setValue($value);
             }
         }
     }
