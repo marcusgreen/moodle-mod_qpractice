@@ -212,14 +212,7 @@ final class backup_restore_test extends \advanced_testcase {
         $this->setAdminUser();
 
         [$course, $qpractice, , $categorya, $categoryb] = $this->create_course_with_path();
-        // Moodle 5.2 deprecates duplicate_module() in favour of cmactions::duplicate(),
-        // which older cores don't have.
-        $cmactions = new \core_courseformat\local\cmactions($course);
-        if (method_exists($cmactions, 'duplicate')) {
-            $newcm = $cmactions->duplicate($qpractice->cmid);
-        } else {
-            $newcm = duplicate_module($course, get_coursemodule_from_id('qpractice', $qpractice->cmid));
-        }
+        $newcm = (new \core_courseformat\local\cmactions($course))->duplicate($qpractice->cmid);
 
         $stages = $DB->get_fieldset_select(
             'qpractice_category_path',

@@ -236,12 +236,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
     }
 
     /**
-     * Build the category tree items for a question bank, across supported core versions.
-     *
-     * Moodle 5.0's question_categories takes a required, non-nullable $contexts array and
-     * exposes the tree through $editlists (keyed by context id). Later cores make $contexts
-     * optional (deprecated) and expose a single $editlist. Reflect the constructor to detect
-     * which shape this core uses rather than branching on the version number.
+     * Build the category tree items for a question bank.
      *
      * @param int $cmid The qbank course-module id.
      * @return array The category tree items, keyed by category id, or an empty array.
@@ -249,16 +244,6 @@ class mod_qpractice_mod_form extends moodleform_mod {
     protected function build_category_items(int $cmid): array {
         global $PAGE;
 
-        $context = \context_module::instance($cmid);
-        $contextsparam = (new \ReflectionMethod(question_categories::class, '__construct'))->getParameters()[1] ?? null;
-
-        if ($contextsparam && !$contextsparam->isOptional()) {
-            // Moodle 5.0: pass the module context explicitly and read from $editlists.
-            $cats = new question_categories($PAGE->url, [$context], $cmid);
-            return $cats->editlists[$context->id]->items ?? [];
-        }
-
-        // Later cores: $contexts is deprecated; pass cmid by name and read $editlist.
         $cats = new question_categories($PAGE->url, cmid: $cmid);
         return $cats->editlist->items ?? [];
     }
