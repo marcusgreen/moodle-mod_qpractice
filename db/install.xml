@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/qpractice/db" VERSION="20230116" COMMENT="XMLDB file for Moodle mod/qpractice"
+<XMLDB PATH="mod/qpractice/db" VERSION="2026091400" COMMENT="XMLDB file for Moodle mod/qpractice"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -13,6 +13,8 @@
         <FIELD NAME="topcategory" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Top question category a student can select"/>
         <FIELD NAME="introformat" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Format of the intro field (MOODLE, HTML, MARKDOWN...)"/>
         <FIELD NAME="behaviour" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Displays the question behaviour selected by teachers"/>
+        <FIELD NAME="pathmode" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = students follow an ordered category path with thresholds, 0 = free choice among categories"/>
+        <FIELD NAME="allowwrongonly" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = students may start a session containing only questions they previously got wrong"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
@@ -39,6 +41,7 @@
         <FIELD NAME="totalnoofquestionsright" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="marksobtained" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2"/>
         <FIELD NAME="totalmarks" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="2" COMMENT="Marks available if all were answered correctly"/>
+        <FIELD NAME="wrongonly" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="1 = this session only offers questions the student previously got wrong"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -68,6 +71,42 @@
         <KEY NAME="qpractice_session_cat" TYPE="foreign" FIELDS="category" REFTABLE="qpractice_categories" REFFIELDS="id"/>
         <KEY NAME="qpractice_sessions" TYPE="foreign" FIELDS="session" REFTABLE="qpractice_session" REFFIELDS="id"/>
       </KEYS>
+    </TABLE>
+    <TABLE NAME="qpractice_category_path" COMMENT="Ordered category stages with thresholds for path-mode qpractice instances">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="qpracticeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="categoryid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Question category for this stage"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0-based position of this stage in the path"/>
+        <FIELD NAME="targetpercent" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Percentage correct required to advance past this stage, null on the final stage"/>
+        <FIELD NAME="onachieve" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="nextstage" SEQUENCE="false" COMMENT="What happens when targetpercent is reached: nextstage or stay"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="qpracticeid" TYPE="foreign" FIELDS="qpracticeid" REFTABLE="qpractice" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="qpracticeid_sortorder" UNIQUE="false" FIELDS="qpracticeid, sortorder"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="qpractice_user_path_progress" COMMENT="Tracks which path stage each student has reached in a path-mode qpractice instance">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="qpracticeid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="currentsortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="sortorder of the stage the user is currently on"/>
+        <FIELD NAME="stagecorrect" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="Marks obtained so far on the current stage"/>
+        <FIELD NAME="stagetotal" TYPE="number" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="Marks available so far on the current stage"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="qpracticeid" TYPE="foreign" FIELDS="qpracticeid" REFTABLE="qpractice" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="qpracticeid_userid" UNIQUE="true" FIELDS="qpracticeid, userid"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>

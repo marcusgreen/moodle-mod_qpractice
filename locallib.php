@@ -194,6 +194,7 @@ function qpractice_session_create(stdClass $fromform, \context $context): int {
     $quba->set_id_from_database($newid);
 
     $qpractice->questionusageid = $quba->get_id();
+    $qpractice->wrongonly = !empty($fromform->wrongonly) ? 1 : 0;
     $sessionid = $DB->insert_record('qpractice_session', $qpractice);
     foreach ($fromform->categories as $categoryid => $value) {
         $DB->insert_record('qpractice_session_cats', ['category' => $categoryid, 'session' => $sessionid]);
@@ -242,8 +243,19 @@ function get_available_questions_from_categories(array $categories): array {
  * @return \stdClass
  */
 function choose_other_question(array $categories, array $excludedquestions, bool $allowshuffle = true) {
-
     $available = get_available_questions_from_categories($categories);
+    return choose_other_question_from_ids($available, $excludedquestions, $allowshuffle);
+}
+
+/**
+ * Get another question (at runtime) from a fixed pool of candidate question ids.
+ *
+ * @param array $available candidate question ids
+ * @param array $excludedquestions
+ * @param bool $allowshuffle
+ * @return \stdClass
+ */
+function choose_other_question_from_ids(array $available, array $excludedquestions, bool $allowshuffle = true) {
     shuffle($available);
 
     foreach ($available as $questionid) {
@@ -255,6 +267,57 @@ function choose_other_question(array $categories, array $excludedquestions, bool
     }
 
     return null;
+}
+
+/**
+ * Return the ids of questions the student most recently answered incorrectly (fraction <= 0)
+ * across their past sessions for a given qpractice instance. A question that was answered
+ * wrong once but later answered correctly is not included, since the latest attempt wins.
+ *
+ * @param int $qpracticeid
+ * @param int $userid
+ * @return array List of question ids.
+ */
+function qpractice_get_incorrect_questionids(int $qpracticeid, int $userid): array {
+    global $DB;
+
+    $sessions = $DB->get_records(
+        'qpractice_session',
+        ['qpracticeid' => $qpracticeid, 'userid' => $userid],
+        'id ASC'
+    );
+
+    $latestfraction = [];
+    foreach ($sessions as $session) {
+        if (empty($session->questionusageid)) {
+            continue;
+        }
+        try {
+            $quba = question_engine::load_questions_usage_by_activity($session->questionusageid);
+        } catch (\Exception $e) {
+            continue;
+        }
+        foreach ($quba->get_slots() as $slot) {
+            $question = $quba->get_question($slot, false);
+            if (!$question) {
+                continue;
+            }
+            $fraction = $quba->get_question_fraction($slot);
+            if ($fraction === null) {
+                // Not yet attempted; leave any earlier recorded result untouched.
+                continue;
+            }
+            $latestfraction[$question->id] = $fraction;
+        }
+    }
+
+    $incorrect = [];
+    foreach ($latestfraction as $questionid => $fraction) {
+        if ($fraction <= 0) {
+            $incorrect[] = $questionid;
+        }
+    }
+    return $incorrect;
 }
 
 /**
@@ -291,15 +354,29 @@ function get_next_question(int $sessionid, question_usage_by_activity $quba): in
     global $DB;
 
     $session = $DB->get_record('qpractice_session', ['id' => $sessionid]);
-    $categories = $DB->get_records('qpractice_session_cats', ['session' => $sessionid], '', 'category');
     $results = $DB->get_records_menu(
         'question_attempts',
         ['questionusageid' => $session->questionusageid],
         'id',
         'id, questionid'
     );
-    $categories = $DB->get_records_menu('qpractice_session_cats', ['session' => $sessionid], '', 'id, category');
-    $questionid = choose_other_question($categories, $results);
+
+    $qpractice = $DB->get_record('qpractice', ['id' => $session->qpracticeid]);
+    if (!empty($qpractice->pathmode)) {
+        // Path mode: only offer questions from the category the student is currently on.
+        $categoryid = qpractice_current_path_category($qpractice->id, $session->userid);
+        $categories = $categoryid ? [$categoryid] : [];
+    } else {
+        $categories = $DB->get_records_menu('qpractice_session_cats', ['session' => $sessionid], '', 'id, category');
+    }
+
+    if (!empty($session->wrongonly)) {
+        $incorrectids = qpractice_get_incorrect_questionids($qpractice->id, $session->userid);
+        $available = array_intersect(get_available_questions_from_categories($categories), $incorrectids);
+        $questionid = choose_other_question_from_ids($available, $results);
+    } else {
+        $questionid = choose_other_question($categories, $results);
+    }
 
     if ($questionid == null) {
         $viewurl = new moodle_url('/mod/qpractice/summary.php', ['id' => $sessionid]);
@@ -312,4 +389,125 @@ function get_next_question(int $sessionid, question_usage_by_activity $quba): in
     question_engine::save_questions_usage_by_activity($quba);
     $DB->set_field('qpractice_session', 'totalnoofquestions', $slot, ['id' => $sessionid]);
     return $slot;
+}
+
+/**
+ * Return the ordered category path stages for a qpractice instance.
+ *
+ * @param int $qpracticeid
+ * @return array List of stdClass rows from qpractice_category_path, ordered by sortorder.
+ */
+function qpractice_get_path_stages(int $qpracticeid): array {
+    global $DB;
+    return array_values($DB->get_records('qpractice_category_path', ['qpracticeid' => $qpracticeid], 'sortorder ASC'));
+}
+
+/**
+ * Get (creating if necessary) the path progress row for a student, starting them on the
+ * first stage the first time they attempt a path-mode instance.
+ *
+ * @param int $qpracticeid
+ * @param int $userid
+ * @return stdClass|null The progress row, or null if this instance has no path stages.
+ */
+function qpractice_get_or_create_path_progress(int $qpracticeid, int $userid): ?stdClass {
+    global $DB;
+
+    $stages = qpractice_get_path_stages($qpracticeid);
+    if (!$stages) {
+        return null;
+    }
+
+    $progress = $DB->get_record('qpractice_user_path_progress', ['qpracticeid' => $qpracticeid, 'userid' => $userid]);
+    if ($progress) {
+        return $progress;
+    }
+
+    $progress = (object) [
+        'qpracticeid' => $qpracticeid,
+        'userid' => $userid,
+        'currentsortorder' => $stages[0]->sortorder,
+        'stagecorrect' => 0,
+        'stagetotal' => 0,
+        'timemodified' => time(),
+    ];
+    $progress->id = $DB->insert_record('qpractice_user_path_progress', $progress);
+    return $progress;
+}
+
+/**
+ * Return the category id of the stage a student is currently working through.
+ *
+ * @param int $qpracticeid
+ * @param int $userid
+ * @return int|null The category id, or null if this instance has no path stages.
+ */
+function qpractice_current_path_category(int $qpracticeid, int $userid): ?int {
+    $stages = qpractice_get_path_stages($qpracticeid);
+    if (!$stages) {
+        return null;
+    }
+    $progress = qpractice_get_or_create_path_progress($qpracticeid, $userid);
+    foreach ($stages as $stage) {
+        if ($stage->sortorder == $progress->currentsortorder) {
+            return (int) $stage->categoryid;
+        }
+    }
+    // The student's stage no longer exists (path was edited); fall back to the first stage.
+    return (int) $stages[0]->categoryid;
+}
+
+/**
+ * Record the outcome of one answered question against the student's current path stage,
+ * and advance them to the next stage if their running percentage now meets its target.
+ *
+ * @param int $qpracticeid
+ * @param int $userid
+ * @param float $obtainedmarks Marks obtained for the question just answered.
+ * @param float $maxmarks Marks available for the question just answered.
+ * @return bool True if the student advanced to a new stage as a result of this answer.
+ */
+function qpractice_record_path_answer(int $qpracticeid, int $userid, float $obtainedmarks, float $maxmarks): bool {
+    global $DB;
+
+    $stages = qpractice_get_path_stages($qpracticeid);
+    if (!$stages) {
+        return false;
+    }
+    $progress = qpractice_get_or_create_path_progress($qpracticeid, $userid);
+
+    $stage = null;
+    $stageindex = null;
+    foreach ($stages as $i => $s) {
+        if ($s->sortorder == $progress->currentsortorder) {
+            $stage = $s;
+            $stageindex = $i;
+            break;
+        }
+    }
+    if ($stage === null) {
+        return false;
+    }
+
+    $progress->stagecorrect += $obtainedmarks;
+    $progress->stagetotal += $maxmarks;
+    $progress->timemodified = time();
+
+    $advanced = false;
+    $nextstage = $stages[$stageindex + 1] ?? null;
+    if (
+        $stage->targetpercent !== null
+        && $stage->onachieve === 'nextstage'
+        && $nextstage
+        && $progress->stagetotal > 0
+        && ($progress->stagecorrect / $progress->stagetotal * 100) >= $stage->targetpercent
+    ) {
+        $progress->currentsortorder = $nextstage->sortorder;
+        $progress->stagecorrect = 0;
+        $progress->stagetotal = 0;
+        $advanced = true;
+    }
+
+    $DB->update_record('qpractice_user_path_progress', $progress);
+    return $advanced;
 }

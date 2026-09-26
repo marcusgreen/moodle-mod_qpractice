@@ -50,19 +50,29 @@ class mod_qpractice_startattempt_form extends moodleform {
         $mform->addElement('header', 'general', get_string('setuppractice', 'qpractice'));
         $mform->setType('eranchor', PARAM_TEXT);
         $categories = $this->_customdata['categories'];
-        if (count($categories) > 1) {
-            foreach ($categories as $category) {
-                $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
-            }
-            $mform->addGroup($cbx, 'categories', get_string('category'));
-        } else {
+        $pathmode = !empty($this->_customdata['pathmode']);
+        if (!$categories) {
+            $mform->addElement('static', 'category', get_string('category'), get_string('nomorequestions', 'qpractice'));
+        } else if ($pathmode || count($categories) == 1) {
+            // Path mode (or only one category available): nothing to choose, the category
+            // is fixed, so just show it and submit it as a hidden checkbox.
             $category = reset($categories);
             $mform->addElement('static', 'category', get_string('category'), $category->name);
             $categoryelement[] = $mform->createElement('advcheckbox', $category->categoryid, null, null, ['hidden=true']);
 
             $mform->addGroup($categoryelement, 'categories');
+        } else {
+            foreach ($categories as $category) {
+                $cbx[] = $mform->createElement('checkbox', $category->categoryid, $category->name);
+            }
+            $mform->addGroup($cbx, 'categories', get_string('category'));
         }
         $mform->addElement('select', 'behaviour', get_string('behaviour', 'qpractice'), $this->_customdata['behaviours']);
+
+        if (!empty($this->_customdata['showwrongonly'])) {
+            $mform->addElement('advcheckbox', 'wrongonly', get_string('onlyincorrect', 'qpractice'));
+            $mform->setDefault('wrongonly', 0);
+        }
 
         $this->add_action_buttons(true, get_string('startpractice', 'qpractice'));
 

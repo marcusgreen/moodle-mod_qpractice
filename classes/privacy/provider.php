@@ -67,6 +67,16 @@ class provider implements
             ], 'privacy:metadata:qpractice_session_categories');
         }
 
+        // Path mode: tracks which stage of the category path each student has reached.
+        $items->add_database_table('qpractice_user_path_progress', [
+            'qpracticeid' => 'privacy:metadata:qpractice_user_path_progress:qpracticeid',
+            'userid' => 'privacy:metadata:qpractice_user_path_progress:userid',
+            'currentsortorder' => 'privacy:metadata:qpractice_user_path_progress:currentsortorder',
+            'stagecorrect' => 'privacy:metadata:qpractice_user_path_progress:stagecorrect',
+            'stagetotal' => 'privacy:metadata:qpractice_user_path_progress:stagetotal',
+            'timemodified' => 'privacy:metadata:qpractice_user_path_progress:timemodified',
+        ], 'privacy:metadata:qpractice_user_path_progress');
+
         return $items;
     }
 
@@ -96,6 +106,22 @@ class provider implements
         ];
 
         $contextlist->add_from_sql($sql, $params);
+
+        // Also pick up contexts where the user only has category path progress (path mode).
+        $pathsql = "SELECT ctx.id
+                  FROM {context} ctx
+                  JOIN {course_modules} cm ON cm.id = ctx.instanceid AND ctx.contextlevel = :contextmodule2
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname2
+                  JOIN {qpractice} qp ON qp.id = cm.instance
+                  JOIN {qpractice_user_path_progress} p ON p.qpracticeid = qp.id
+                 WHERE p.userid = :userid2";
+        $pathparams = [
+            'contextmodule2' => CONTEXT_MODULE,
+            'modname2' => 'qpractice',
+            'userid2' => $userid,
+        ];
+        $contextlist->add_from_sql($pathsql, $pathparams);
+
         return $contextlist;
     }
 
@@ -129,23 +155,34 @@ class provider implements
                 'userid' => $userid,
             ], 'practicedate ASC, id ASC');
 
-            if (!$sessions) {
-                continue;
+            if ($sessions) {
+                $data = [];
+                foreach ($sessions as $s) {
+                    $data[] = (object) [
+                        'categoryid' => $s->categoryid,
+                        'practicedate' => transform::datetime($s->practicedate),
+                        'totalnoofquestions' => $s->totalnoofquestions,
+                        'marksobtained' => $s->marksobtained,
+                        'totalmarks' => $s->totalmarks,
+                    ];
+                }
+
+                writer::with_context($context)
+                    ->export_data(['sessions'], (object) ['sessions' => $data]);
             }
 
-            $data = [];
-            foreach ($sessions as $s) {
-                $data[] = (object) [
-                    'categoryid' => $s->categoryid,
-                    'practicedate' => transform::datetime($s->practicedate),
-                    'totalnoofquestions' => $s->totalnoofquestions,
-                    'marksobtained' => $s->marksobtained,
-                    'totalmarks' => $s->totalmarks,
-                ];
+            $progress = $DB->get_record('qpractice_user_path_progress', [
+                'qpracticeid' => $cm->instance,
+                'userid' => $userid,
+            ]);
+            if ($progress) {
+                writer::with_context($context)->export_data(['pathprogress'], (object) [
+                    'currentsortorder' => $progress->currentsortorder,
+                    'stagecorrect' => $progress->stagecorrect,
+                    'stagetotal' => $progress->stagetotal,
+                    'timemodified' => transform::datetime($progress->timemodified),
+                ]);
             }
-
-            writer::with_context($context)
-                ->export_data(['sessions'], (object) ['sessions' => $data]);
         }
     }
 
@@ -177,7 +214,32 @@ class provider implements
                 'qpracticeid' => $cm->instance,
                 'userid' => $userid,
             ]);
+            $DB->delete_records('qpractice_user_path_progress', [
+                'qpracticeid' => $cm->instance,
+                'userid' => $userid,
+            ]);
         }
+    }
+
+    /**
+     * Delete all user data for all users in the specified context.
+     *
+     * @param context $context
+     */
+    public static function delete_data_for_all_users_in_context(context $context) {
+        global $DB;
+
+        if (!$context instanceof context_module) {
+            return;
+        }
+
+        $cm = get_coursemodule_from_id('qpractice', $context->instanceid);
+        if (!$cm) {
+            return;
+        }
+
+        $DB->delete_records('qpractice_session', ['qpracticeid' => $cm->instance]);
+        $DB->delete_records('qpractice_user_path_progress', ['qpracticeid' => $cm->instance]);
     }
 
     /**
@@ -206,6 +268,11 @@ class provider implements
         [$insql, $inparams] = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
         $params = ['qpracticeid' => $cm->instance] + $inparams;
         $DB->delete_records_select('qpractice_session', "qpracticeid = :qpracticeid AND userid $insql", $params);
+        $DB->delete_records_select(
+            'qpractice_user_path_progress',
+            "qpracticeid = :qpracticeid AND userid $insql",
+            $params
+        );
     }
 
     /**
@@ -232,6 +299,11 @@ class provider implements
         $params = ['qpracticeid' => $cm->instance];
 
         $userlist->add_from_sql('userid', $sql, $params);
+
+        $pathsql = "SELECT p.userid
+                  FROM {qpractice_user_path_progress} p
+                 WHERE p.qpracticeid = :qpracticeid";
+        $userlist->add_from_sql('userid', $pathsql, $params);
     }
 
     /**

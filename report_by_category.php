@@ -42,6 +42,7 @@ if ($cmid) {
 require_login($course, true, $cm);
 
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/locallib.php');
 
 $context = context_module::instance($cm->id);
 $PAGE->set_context($context);
@@ -59,26 +60,49 @@ $PAGE->set_pagelayout('admin');
 
 echo $OUTPUT->header();
 
-// Get categories and question counts for this session.
-$sql = "SELECT qc.name as categoryname, COUNT(qa.id) as questioncount
+// Get categories and question counts for this session, worked out from the actual
+// question each attempt used (not the session's original category selection) so that
+// path-mode sessions, which move through several categories, are counted correctly.
+$sql = "SELECT qc.id as categoryid, qc.name as categoryname, COUNT(qa.id) as questioncount
         FROM {qpractice_session} qs
-        JOIN {qpractice_session_cats} qsc ON qs.id = qsc.session
-        JOIN {question_categories} qc ON qsc.category = qc.id
         JOIN {question_usages} qu ON qs.questionusageid = qu.id
         JOIN {question_attempts} qa ON qu.id = qa.questionusageid
+        JOIN {question_versions} qv ON qv.questionid = qa.questionid
+        JOIN {question_bank_entries} qbe ON qbe.id = qv.questionbankentryid
+        JOIN {question_categories} qc ON qc.id = qbe.questioncategoryid
         WHERE qs.id = :sessionid
-        GROUP BY qc.name, qc.id
+        GROUP BY qc.id, qc.name
         ORDER BY qc.name";
 
 $categories = $DB->get_records_sql($sql, ['sessionid' => $sessionid]);
 
+// In path mode, show which stage of the path each category belongs to.
+$stagelabels = [];
+if (!empty($qpractice->pathmode)) {
+    $stages = qpractice_get_path_stages($qpractice->id);
+    $totalstages = count($stages);
+    foreach ($stages as $i => $stage) {
+        $stagelabels[$stage->categoryid] = get_string('pathstageofstages', 'qpractice', (object) [
+            'stage' => $i + 1,
+            'total' => $totalstages,
+        ]);
+    }
+}
+
 // Display the results in a table.
 $table = new html_table();
 $table->head = [get_string('categoryname', 'qpractice'), get_string('questioncount', 'qpractice')];
+if (!empty($qpractice->pathmode)) {
+    $table->head[] = get_string('pathstagecolumn', 'qpractice');
+}
 $table->data = [];
 
 foreach ($categories as $category) {
-    $table->data[] = [$category->categoryname, $category->questioncount];
+    $row = [$category->categoryname, $category->questioncount];
+    if (!empty($qpractice->pathmode)) {
+        $row[] = $stagelabels[$category->categoryid] ?? '-';
+    }
+    $table->data[] = $row;
 }
 
 echo html_writer::table($table);

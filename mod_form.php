@@ -75,6 +75,17 @@ class mod_qpractice_mod_form extends moodleform_mod {
         }
         $banks = $this->get_categories($COURSE->id);
 
+        $mform->addElement('advcheckbox', 'pathmode', get_string('pathmode', 'qpractice'));
+        $mform->addHelpButton('pathmode', 'pathmode', 'qpractice');
+        $mform->setDefault('pathmode', 0);
+
+        $mform->addElement('advcheckbox', 'allowwrongonly', get_string('allowwrongonly', 'qpractice'));
+        $mform->addHelpButton('allowwrongonly', 'allowwrongonly', 'qpractice');
+        $mform->setDefault('allowwrongonly', 0);
+        $mform->hideIf('allowwrongonly', 'pathmode', 'checked');
+
+        $this->add_path_stages($mform, $banks);
+
         $banks = array_values($banks);
         if (count($banks) <= 1) {
             // Only one bank available: show its categories directly, no dropdown needed.
@@ -117,6 +128,20 @@ class mod_qpractice_mod_form extends moodleform_mod {
             get_string('selectallnone', 'qpractice'),
             ['class' => 'qpbtn']
         );
+
+        // Free-choice category checkboxes (and the bank picker) are only relevant when
+        // path mode is off; hide them (they remain submitted/harmless if left checked
+        // from before path mode was turned on, since upsert only runs for the active mode).
+        if (!empty($mform->elementExists('otherbankselect'))) {
+            $mform->hideIf('otherbankselect', 'pathmode', 'checked');
+        }
+        $mform->hideIf('select_all_none', 'pathmode', 'checked');
+        foreach ($this->flatten_category_ids($banks) as $categoryid) {
+            $elid = "categories[$categoryid]";
+            if ($mform->elementExists($elid)) {
+                $mform->hideIf($elid, 'pathmode', 'checked');
+            }
+        }
 
         $mform->addElement('header', 'qpracticefieldset', get_string('behaviours', 'qpractice'));
 
@@ -292,6 +317,117 @@ class mod_qpractice_mod_form extends moodleform_mod {
     }
 
     /**
+     * Flatten every category id out of the bank tree structure returned by get_categories().
+     *
+     * @param array $banks List of bank objects, each with ->items (category tree).
+     * @return array Flat list of category ids.
+     */
+    protected function flatten_category_ids(array $banks): array {
+        $ids = [];
+        $walk = function (array $items) use (&$ids, &$walk) {
+            foreach ($items as $c) {
+                $ids[] = $c->id;
+                if (isset($c->children)) {
+                    $walk($c->children);
+                }
+            }
+        };
+        foreach ($banks as $bank) {
+            $walk($bank->items);
+        }
+        return $ids;
+    }
+
+    /**
+     * Flatten the bank tree into a single "categoryid => label" list suitable for a
+     * <select>, prefixed with the bank name and indented to show depth.
+     *
+     * @param array $banks List of bank objects, each with ->name and ->items (category tree).
+     * @return array Flat options list, categoryid => label.
+     */
+    protected function flatten_categories_for_select(array $banks): array {
+        $options = [];
+        $walk = function (array $items, string $prefix, int $depth) use (&$options, &$walk) {
+            foreach ($items as $c) {
+                if (!isset($c->children) && $c->questioncount == 0) {
+                    continue;
+                }
+                $indent = str_repeat('— ', $depth);
+                $options[$c->id] = $prefix . $indent . $c->name . ' (' . $c->questioncount . ')';
+                if (isset($c->children)) {
+                    $walk($c->children, $prefix, $depth + 1);
+                }
+            }
+        };
+        foreach ($banks as $bank) {
+            $walk($bank->items, $bank->name . ' / ', 0);
+        }
+        return $options;
+    }
+
+    /**
+     * Add the repeatable "category path" stage rows (category, target percent, on-achieve
+     * action). Hidden unless "pathmode" is checked.
+     *
+     * @param MoodleQuickForm $mform The Moodle form object.
+     * @param array $banks List of bank objects, used to build the category dropdown.
+     * @return void
+     */
+    protected function add_path_stages(MoodleQuickForm $mform, array $banks): void {
+        $categoryoptions = ['' => get_string('choosedots')] + $this->flatten_categories_for_select($banks);
+        $onachieveoptions = [
+            'nextstage' => get_string('onachieve_nextstage', 'qpractice'),
+            'stay' => get_string('onachieve_stay', 'qpractice'),
+        ];
+
+        $existingstages = $this->get_path_stages();
+        $repeatno = max(1, count($existingstages));
+
+        $repeatarray = [
+            $mform->createElement('select', 'pathstagecategory', get_string('pathstagecategory', 'qpractice'), $categoryoptions),
+            $mform->createElement('text', 'pathstagetarget', get_string('pathstagetarget', 'qpractice'), ['size' => 3]),
+            $mform->createElement('select', 'pathstageonachieve', get_string('onachieve', 'qpractice'), $onachieveoptions),
+        ];
+        $repeatoptions = [
+            'pathstagecategory' => ['type' => PARAM_INT],
+            'pathstagetarget' => ['type' => PARAM_INT],
+            'pathstageonachieve' => ['type' => PARAM_ALPHA],
+        ];
+
+        $stagecount = $this->repeat_elements(
+            $repeatarray,
+            $repeatno,
+            $repeatoptions,
+            'pathstagerepeats',
+            'pathstageadd',
+            1,
+            get_string('pathaddstage', 'qpractice'),
+            true
+        );
+
+        for ($i = 0; $i < $stagecount; $i++) {
+            $mform->hideIf("pathstagecategory[$i]", 'pathmode', 'notchecked');
+            $mform->hideIf("pathstagetarget[$i]", 'pathmode', 'notchecked');
+            $mform->hideIf("pathstageonachieve[$i]", 'pathmode', 'notchecked');
+        }
+        $mform->hideIf('pathstageadd', 'pathmode', 'notchecked');
+    }
+
+    /**
+     * Return the saved path stages for this instance, ordered by sortorder.
+     *
+     * @return array List of stdClass rows from qpractice_category_path (empty when creating).
+     */
+    protected function get_path_stages(): array {
+        global $DB;
+
+        if (empty($this->_instance)) {
+            return [];
+        }
+        return array_values($DB->get_records('qpractice_category_path', ['qpracticeid' => $this->_instance], 'sortorder ASC'));
+    }
+
+    /**
      * Recursively adds category checkboxes to the form.
      *
      * @param MoodleQuickForm $mform The Moodle form object to which the checkboxes will be added.
@@ -374,6 +510,22 @@ class mod_qpractice_mod_form extends moodleform_mod {
                 $mform->getElement($elid)->setChecked(true);
             }
         }
+
+        $stages = $DB->get_records('qpractice_category_path', ['qpracticeid' => $defaultvalues->id], 'sortorder ASC');
+        $pathstagecategory = [];
+        $pathstagetarget = [];
+        $pathstageonachieve = [];
+        foreach ($stages as $stage) {
+            $pathstagecategory[] = $stage->categoryid;
+            $pathstagetarget[] = $stage->targetpercent;
+            $pathstageonachieve[] = $stage->onachieve;
+        }
+        if ($pathstagecategory) {
+            $defaultvalues->pathstagecategory = $pathstagecategory;
+            $defaultvalues->pathstagetarget = $pathstagetarget;
+            $defaultvalues->pathstageonachieve = $pathstageonachieve;
+        }
+
         parent::set_data($defaultvalues);
     }
 
@@ -388,17 +540,74 @@ class mod_qpractice_mod_form extends moodleform_mod {
     public function validation($data, $files): array {
         $errors = parent::validation($data, $files);
 
-        // Only inspect the category checkboxes, not the whole submission.
-        $selected = array_filter($data['categories'] ?? [], function ($checked) {
-            return $checked != 0;
-        });
+        if (!empty($data['pathmode'])) {
+            $errors += $this->validate_path_stages($data);
+        } else {
+            // Only inspect the category checkboxes, not the whole submission.
+            $selected = array_filter($data['categories'] ?? [], function ($checked) {
+                return $checked != 0;
+            });
 
-        if (!$selected) {
-            // Anchor the error to the always-present button that sits under the list.
-            $errors['select_all_none'] = get_string('nocategoriesselected', 'qpractice');
+            if (!$selected) {
+                // Anchor the error to the always-present button that sits under the list.
+                $errors['select_all_none'] = get_string('nocategoriesselected', 'qpractice');
+            }
         }
+
         if (!isset($data['behaviour'])) {
             $errors['behaviour[adaptive]'] = get_string('selectonebehaviourerror', 'qpractice');
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Validate the repeatable path stage rows: every stage needs a category, no
+     * category may appear twice, and every non-final stage needs a target percent
+     * (unless it's explicitly set to "stay" rather than advance).
+     *
+     * @param array $data Submitted form data.
+     * @return array Errors keyed by element name.
+     */
+    protected function validate_path_stages(array $data): array {
+        $errors = [];
+        $categories = $data['pathstagecategory'] ?? [];
+        $targets = $data['pathstagetarget'] ?? [];
+        $onachieve = $data['pathstageonachieve'] ?? [];
+
+        $seen = [];
+        $lastfilled = -1;
+        foreach ($categories as $i => $categoryid) {
+            if ((int) $categoryid <= 0) {
+                continue;
+            }
+            $lastfilled = $i;
+            if (isset($seen[$categoryid])) {
+                $errors["pathstagecategory[$i]"] = get_string('pathduplicatecategory', 'qpractice', $categoryid);
+            }
+            $seen[$categoryid] = true;
+        }
+
+        if ($lastfilled < 0) {
+            $errors['pathstagecategory[0]'] = get_string('pathstagerequired', 'qpractice');
+            return $errors;
+        }
+
+        foreach ($categories as $i => $categoryid) {
+            if ((int) $categoryid <= 0) {
+                continue;
+            }
+            if ($i === $lastfilled) {
+                // Final stage: no target required, it's open-ended practice.
+                continue;
+            }
+            $target = $targets[$i] ?? '';
+            $stays = ($onachieve[$i] ?? 'nextstage') === 'stay';
+            if ($target === '' && !$stays) {
+                $errors["pathstagetarget[$i]"] = get_string('pathstagetargetrequired', 'qpractice', $i + 1);
+            } else if ($target !== '' && ((int) $target < 1 || (int) $target > 100)) {
+                $errors["pathstagetarget[$i]"] = get_string('pathstagetargetrequired', 'qpractice', $i + 1);
+            }
         }
 
         return $errors;

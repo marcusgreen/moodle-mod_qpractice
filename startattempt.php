@@ -44,12 +44,22 @@ if ($id) {
     }
     $qpractice = $DB->get_record('qpractice', ['id' => $cm->instance]);
 
-    $sql = "SELECT qpcat.id, qpcat.categoryid,qcat.name FROM {qpractice_categories} qpcat
-            JOIN {question_categories} qcat
-            ON qpcat.categoryid = qcat.id
-            WHERE qpcat.qpracticeid = :qpracticeid";
+    if (!empty($qpractice->pathmode)) {
+        // Path mode: the student doesn't choose a category, they get whichever
+        // stage they've currently reached.
+        $categoryid = qpractice_current_path_category($qpractice->id, $USER->id);
+        $categories = $categoryid ? $DB->get_records_sql(
+            "SELECT qcat.id, qcat.id AS categoryid, qcat.name FROM {question_categories} qcat WHERE qcat.id = :categoryid",
+            ['categoryid' => $categoryid]
+        ) : [];
+    } else {
+        $sql = "SELECT qpcat.id, qpcat.categoryid,qcat.name FROM {qpractice_categories} qpcat
+                JOIN {question_categories} qcat
+                ON qpcat.categoryid = qcat.id
+                WHERE qpcat.qpracticeid = :qpracticeid";
 
-    $categories = $DB->get_records_sql($sql, ['qpracticeid' => $qpractice->id]);
+        $categories = $DB->get_records_sql($sql, ['qpracticeid' => $qpractice->id]);
+    }
 }
 
 require_login($course, true, $cm);
@@ -64,6 +74,9 @@ $data = [];
 $data['categories'] = $categories;
 $data['behaviours'] = $behaviours;
 $data['instanceid'] = $cm->instance;
+$data['pathmode'] = !empty($qpractice->pathmode);
+$data['showwrongonly'] = empty($qpractice->pathmode) && !empty($qpractice->allowwrongonly)
+    && qpractice_get_incorrect_questionids($qpractice->id, $USER->id);
 
 $mform = new mod_qpractice_startattempt_form(null, $data);
 

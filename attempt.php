@@ -72,6 +72,15 @@ if (data_submitted()) {
                         WHERE id=?";
             $DB->execute($updatesql1, [$sessionid]);
         }
+
+        $qpractice = $DB->get_record('qpractice', ['id' => $session->qpracticeid]);
+        if (!empty($qpractice->pathmode)) {
+            $advanced = qpractice_record_path_answer($qpractice->id, $session->userid, $obtainedmarks, $maxmarks);
+            if ($advanced) {
+                \core\notification::add(get_string('pathtargetunlocked', 'qpractice'), \core\notification::SUCCESS);
+            }
+        }
+
         $slot = get_next_question($sessionid, $quba);
         $question = $quba->get_question($slot);
         $transaction->allow_commit();

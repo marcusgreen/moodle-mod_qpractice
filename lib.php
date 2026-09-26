@@ -80,6 +80,7 @@ function qpractice_add_instance(stdClass $qpractice, ?mod_qpractice_mod_form $mf
     $qpractice->categories = $categories;
 
     upsert_categories($qpractice);
+    upsert_category_path($qpractice);
 
     qpractice_after_add_or_update($qpractice);
 
@@ -106,6 +107,47 @@ function upsert_categories(stdClass $qpractice) {
     $DB->insert_records('qpractice_categories', $recordstoinsert);
 }
 
+/**
+ * Replace the category path stages for this instance from the submitted repeat_elements
+ * rows (pathstagecategory[], pathstagetarget[], pathstageonachieve[]).
+ *
+ * Called for both create and update; when pathmode is off, any previously saved stages
+ * are removed so a later switch back to path mode starts from a clean slate.
+ *
+ * @param stdClass $qpractice
+ * @return void
+ */
+function upsert_category_path(stdClass $qpractice) {
+    global $DB;
+
+    $DB->delete_records('qpractice_category_path', ['qpracticeid' => $qpractice->id]);
+
+    if (empty($qpractice->pathmode) || empty($qpractice->pathstagecategory)) {
+        return;
+    }
+
+    $recordstoinsert = [];
+    $sortorder = 0;
+    foreach ($qpractice->pathstagecategory as $i => $categoryid) {
+        $categoryid = (int) $categoryid;
+        if ($categoryid <= 0) {
+            continue;
+        }
+        $target = $qpractice->pathstagetarget[$i] ?? '';
+        $recordstoinsert[] = (object) [
+            'qpracticeid' => $qpractice->id,
+            'categoryid' => $categoryid,
+            'sortorder' => $sortorder++,
+            'targetpercent' => $target === '' ? null : (int) $target,
+            'onachieve' => $qpractice->pathstageonachieve[$i] ?? 'nextstage',
+        ];
+    }
+
+    if ($recordstoinsert) {
+        $DB->insert_records('qpractice_category_path', $recordstoinsert);
+    }
+}
+
 
 /**
  * Updates an instance of the qpractice in the database
@@ -127,6 +169,7 @@ function qpractice_update_instance(stdClass $qpractice, ?mod_qpractice_mod_form 
     $comma = implode(",", array_keys($behaviour));
     $qpractice->behaviour = $comma;
     upsert_categories($qpractice);
+    upsert_category_path($qpractice);
     if (count($qpractice->categories) > 1) {
         $qpractice->topcategory = null;
     } else {
@@ -163,6 +206,10 @@ function qpractice_delete_instance($id) {
 
     // Delete associated categories.
     $DB->delete_records('qpractice_categories', ['qpracticeid' => $qpractice->id]);
+
+    // Delete associated category path stages and per-user path progress.
+    $DB->delete_records('qpractice_category_path', ['qpracticeid' => $qpractice->id]);
+    $DB->delete_records('qpractice_user_path_progress', ['qpracticeid' => $qpractice->id]);
 
     // Delete the main qpractice record.
     $DB->delete_records('qpractice', ['id' => $qpractice->id]);

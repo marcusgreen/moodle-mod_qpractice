@@ -24,6 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['allowwrongonly'] = 'Allow practising previously incorrect questions';
+$string['allowwrongonly_help'] = 'When enabled, students who have already attempted this activity can choose to start a session containing only questions they most recently answered incorrectly. Not available when a category path is enabled.';
 $string['answered'] = 'Answered';
 $string['atleastonecategory'] = 'At least one category must be selected';
 $string['attemptprogress'] = 'Your progress';
@@ -58,7 +60,24 @@ $string['noofquestionsviewed'] = 'No. of Questions viewed';
 $string['nopermission'] = 'You do not have permission to view this';
 $string['noquestionbanks'] = 'No question banks/categories found';
 $string['normalpractice'] = 'Normal Practice';
+$string['onachieve'] = 'When target reached';
+$string['onachieve_nextstage'] = 'Move to next stage';
+$string['onachieve_stay'] = 'Stay on this stage';
+$string['onlyincorrect'] = 'Only give me questions I previously got wrong';
 $string['pastsessions'] = 'Past Sessions';
+$string['pathaddstage'] = 'Add stage';
+$string['pathduplicatecategory'] = 'Category "{$a}" is used in more than one stage';
+$string['pathmode'] = 'Enable category path';
+$string['pathmode_help'] = 'When enabled, students work through the categories below in order. Each stage can require a target percentage score before the next stage unlocks. When disabled, students can freely choose among any of the selected categories, as normal.';
+$string['pathstage'] = 'Stage {$a}';
+$string['pathstagecategory'] = 'Category';
+$string['pathstagecolumn'] = 'Stage';
+$string['pathstagemissingcategory'] = 'Stage {$a}: select a category';
+$string['pathstageofstages'] = 'Stage {$a->stage} of {$a->total}';
+$string['pathstagerequired'] = 'At least one stage is required for a category path';
+$string['pathstagetarget'] = 'Target to advance (%)';
+$string['pathstagetargetrequired'] = 'Stage {$a}: enter a target percentage, or set "when target reached" to stay on this stage';
+$string['pathtargetunlocked'] = 'You have reached the target for this stage. The next category is now unlocked.';
 $string['percentage'] = 'Percentage';
 $string['pluginadministration'] = 'Question Practice administration';
 $string['pluginname'] = 'Question Practice';
@@ -66,6 +85,13 @@ $string['pluginname_help'] = 'The Question Practice activity enables a teacher t
  is later used by students in their own way to analyze their learning.';
 $string['practicedate'] = 'Practice Date';
 $string['practicesession'] = 'Practice Session';
+$string['privacy:metadata:qpractice_user_path_progress'] = 'Information about how far a student has progressed through a category path.';
+$string['privacy:metadata:qpractice_user_path_progress:currentsortorder'] = 'The position of the stage the user has currently reached.';
+$string['privacy:metadata:qpractice_user_path_progress:qpracticeid'] = 'The ID of the Question Practice activity.';
+$string['privacy:metadata:qpractice_user_path_progress:stagecorrect'] = 'Marks obtained so far on the current stage.';
+$string['privacy:metadata:qpractice_user_path_progress:stagetotal'] = 'Marks available so far on the current stage.';
+$string['privacy:metadata:qpractice_user_path_progress:timemodified'] = 'The time the progress was last updated.';
+$string['privacy:metadata:qpractice_user_path_progress:userid'] = 'The ID of the user.';
 $string['qpractice'] = 'Qpractice';
 $string['qpractice:addinstance'] = 'Add a Question Practice instance';
 $string['qpractice:attempt'] = 'Attempt a Question Practice session';
