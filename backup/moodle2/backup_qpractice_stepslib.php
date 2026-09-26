@@ -45,37 +45,65 @@ class backup_qpractice_activity_structure_step extends backup_questions_activity
 
         // Define each element separated.
         $qpractice = new backup_nested_element('qpractice', ['id'], [
-            'name', 'intro', 'introformat', 'topcategory', 'behaviour', 'timecreated',
-            'timemodified']);
+            'name', 'intro', 'introformat', 'topcategory', 'behaviour', 'pathmode',
+            'allowwrongonly', 'timecreated', 'timemodified']);
+
+        // Categories offered in free-choice mode.
+        $categories = new backup_nested_element('categories');
+        $category = new backup_nested_element('category', ['id'], ['categoryid']);
+
+        // Ordered stages for path mode.
+        $pathstages = new backup_nested_element('pathstages');
+        $pathstage = new backup_nested_element('pathstage', ['id'], [
+            'categoryid', 'sortorder', 'targetpercent', 'minquestions', 'onachieve']);
 
         $sessions = new backup_nested_element('sessions');
 
         $session = new backup_nested_element('session', ['id'], [
-                'qpracticeid', 'questionusageid', 'userid', 'categoryid',
-                'typeofpractice', 'time', 'goalpercentage', 'noofquestions',
-                'practicedate', 'status', 'totalnoofquestions', 'totalnoofquestionsright',
-                'marksobtained', 'totalmarks']);
+                'questionusageid', 'userid', 'typeofpractice', 'time', 'goalpercentage',
+                'noofquestions', 'practicedate', 'status', 'totalnoofquestions',
+                'totalnoofquestionsright', 'marksobtained', 'totalmarks', 'wrongonly']);
+
+        $sessioncats = new backup_nested_element('sessioncats');
+        $sessioncat = new backup_nested_element('sessioncat', ['id'], ['category']);
+
+        // Each student's position in the path.
+        $pathprogresses = new backup_nested_element('pathprogresses');
+        $pathprogress = new backup_nested_element('pathprogress', ['id'], [
+            'userid', 'currentsortorder', 'stagecorrect', 'stagetotal', 'stageanswered',
+            'timemodified']);
 
         $this->add_question_usages($session, 'questionusageid');
 
         // Build the tree.
+        $qpractice->add_child($categories);
+        $categories->add_child($category);
+
+        $qpractice->add_child($pathstages);
+        $pathstages->add_child($pathstage);
 
         $qpractice->add_child($sessions);
         $sessions->add_child($session);
+        $session->add_child($sessioncats);
+        $sessioncats->add_child($sessioncat);
 
-         // Define sources.
+        $qpractice->add_child($pathprogresses);
+        $pathprogresses->add_child($pathprogress);
+
+        // Define sources.
         $qpractice->set_source_table('qpractice', ['id' => backup::VAR_ACTIVITYID]);
+        $category->set_source_table('qpractice_categories', ['qpracticeid' => backup::VAR_PARENTID], 'id ASC');
+        $pathstage->set_source_table('qpractice_category_path', ['qpracticeid' => backup::VAR_PARENTID], 'sortorder ASC');
 
         if ($userinfo) {
-               $session->set_source_table(
-                   'qpractice_session',
-                   ['qpracticeid' => backup::VAR_PARENTID]
-               );
+            $session->set_source_table('qpractice_session', ['qpracticeid' => backup::VAR_PARENTID], 'id ASC');
+            $sessioncat->set_source_table('qpractice_session_cats', ['session' => backup::VAR_PARENTID], 'id ASC');
+            $pathprogress->set_source_table('qpractice_user_path_progress', ['qpracticeid' => backup::VAR_PARENTID]);
         }
 
         // Define id annotations.
         $session->annotate_ids('user', 'userid');
-        $session->annotate_ids('question_categories', 'categoryid');
+        $pathprogress->annotate_ids('user', 'userid');
 
         // Define file annotations.
         $qpractice->annotate_files('mod_qpractice', 'intro', null); // This file area hasn't itemid.

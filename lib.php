@@ -335,45 +335,6 @@ function qpractice_get_extra_capabilities() {
 }
 
 /**
- * Creates or updates grade item for the give qpractice instance
- *
- * Needed by grade_update_mod_grades() in lib/gradelib.php
- *
- * @param stdClass $qpractice instance object with extra cmidnumber and modname property
- * @return void
- */
-function qpractice_grade_item_update(stdClass $qpractice) {
-    global $CFG;
-    require_once($CFG->libdir . '/gradelib.php');
-
-    $item = [];
-    $item['itemname'] = clean_param($qpractice->name, PARAM_NOTAGS);
-    $item['gradetype'] = GRADE_TYPE_VALUE;
-    $item['grademax'] = $qpractice->grade;
-    $item['grademin'] = 0;
-
-    grade_update('mod/qpractice', $qpractice->course, 'mod', 'qpractice', $qpractice->id, 0, null, $item);
-}
-
-/**
- * Update qpractice grades in the gradebook
- *
- * Needed by grade_update_mod_grades() in lib/gradelib.php
- *
- * @param stdClass $qpractice instance object with extra cmidnumber and modname property
- * @param int $userid update grade of specific user only, 0 means all participants
- * @return void
- */
-function qpractice_update_grades(stdClass $qpractice, $userid = 0) {
-    global $CFG, $DB;
-    require_once($CFG->libdir . '/gradelib.php');
-
-    $grades = []; // Populate array of grade objects indexed by userid.
-
-    grade_update('mod/qpractice', $qpractice->course, 'mod', 'qpractice', $qpractice->id, 0, $grades);
-}
-
-/**
  * Returns the lists of all browsable file areas within the given module context
  *
  * The file area 'intro' for the activity introduction field is added automatically
