@@ -77,7 +77,8 @@ final class backup_restore_test extends \advanced_testcase {
             'sortorder' => 0,
             'targetpercent' => 60,
             'minquestions' => 4,
-            'onachieve' => 'nextstage',
+            'onachieve' => 'gotocategory',
+            'gotocategoryid' => $categoryb->id,
         ]);
         $DB->insert_record('qpractice_category_path', [
             'qpracticeid' => $qpractice->id,
@@ -174,6 +175,8 @@ final class backup_restore_test extends \advanced_testcase {
         $this->assertEquals('Stage B', $DB->get_field('question_categories', 'name', ['id' => $stages[1]->categoryid]));
         $this->assertEquals(60, $stages[0]->targetpercent);
         $this->assertEquals(4, $stages[0]->minquestions);
+        $this->assertEquals('gotocategory', $stages[0]->onachieve);
+        $this->assertEquals($stages[1]->categoryid, $stages[0]->gotocategoryid);
         $this->assertNull($stages[1]->targetpercent);
 
         $freechoice = $DB->get_fieldset_select('qpractice_categories', 'categoryid', 'qpracticeid = ?', [$newqpractice->id]);

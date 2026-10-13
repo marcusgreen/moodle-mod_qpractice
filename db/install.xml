@@ -80,7 +80,8 @@
         <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="0-based position of this stage in the path"/>
         <FIELD NAME="targetpercent" TYPE="int" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Percentage correct required to advance past this stage, null on the final stage"/>
         <FIELD NAME="minquestions" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Questions a student must answer on this stage before the target can move them on, 0 for no minimum"/>
-        <FIELD NAME="onachieve" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="nextstage" SEQUENCE="false" COMMENT="What happens when targetpercent is reached: nextstage or stay"/>
+        <FIELD NAME="onachieve" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="nextstage" SEQUENCE="false" COMMENT="What happens when targetpercent is reached: nextstage, gotocategory or stay"/>
+        <FIELD NAME="gotocategoryid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Category of the stage to move to when onachieve is gotocategory"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

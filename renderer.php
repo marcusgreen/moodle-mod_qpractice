@@ -189,19 +189,54 @@ class mod_qpractice_renderer extends plugin_renderer_base {
     /**
      * Live progress summary shown above the question during an attempt.
      *
-     * Practice is open-ended (no fixed target), so this shows running totals:
-     * questions answered so far, how many were correct, the percentage correct,
-     * and marks obtained. The answered count is derived from the usage (finished
-     * slots) since it is not stored on the session.
+     * The first line says what the student is practising: in path mode, their stage,
+     * its category, their score on the stage against its target, and any answers still
+     * needed before they can move on; otherwise, the current question's category.
+     *
+     * The "Stop practice" button sits at the right of that line, away from the
+     * question's own controls. It has its own form, posting "finish" to attempt.php.
+     * It must not belong to the question form: being first in the page, it would
+     * become that form's default button, so pressing Enter in an answer would stop.
+     *
+     * Below that, once a question has been answered, are the session's running totals:
+     * questions answered, how many were correct, the percentage correct, and marks
+     * obtained. The answered count is derived from the usage (finished slots) since it
+     * is not stored on the session.
      *
      * @param int $sessionid The qpractice_session id.
      * @param question_usage_by_activity $quba The session's question usage.
-     * @return string Rendered HTML, or '' before the first question is answered.
+     * @return string Rendered HTML.
      */
     public function attempt_progress(int $sessionid, question_usage_by_activity $quba): string {
         global $DB;
 
         $session = $DB->get_record('qpractice_session', ['id' => $sessionid], '*', MUST_EXIST);
+        $qpractice = $DB->get_record('qpractice', ['id' => $session->qpracticeid], '*', MUST_EXIST);
+
+        $stopbutton = html_writer::tag(
+            'form',
+            html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()])
+                . html_writer::tag(
+                    'button',
+                    $this->output->pix_icon('t/stop', '', 'moodle', ['class' => 'me-1'])
+                        . get_string('stoppractice', 'qpractice'),
+                    [
+                        'type' => 'submit',
+                        'name' => 'finish',
+                        'value' => 1,
+                        'class' => 'btn btn-outline-danger',
+                    ]
+                ),
+            [
+                'method' => 'post',
+                'action' => (new moodle_url('/mod/qpractice/attempt.php', ['id' => $sessionid]))->out(false),
+                'class' => 'ms-auto',
+            ]
+        );
+        $content = html_writer::div(
+            $this->attempt_progress_context($qpractice, $session, $quba) . $stopbutton,
+            'd-flex flex-wrap align-items-center gap-2 mb-1'
+        );
 
         // Count questions already finished (the current one is still in progress).
         $answered = 0;
@@ -210,38 +245,99 @@ class mod_qpractice_renderer extends plugin_renderer_base {
                 $answered++;
             }
         }
-        if ($answered == 0) {
-            // Nothing answered yet: no progress to report.
-            return '';
-        }
+        if ($answered > 0) {
+            $right = (int) $session->totalnoofquestionsright;
+            $pct = (int) round(100 * $right / $answered);
 
-        $right = (int) $session->totalnoofquestionsright;
-        $pct = (int) round(100 * $right / $answered);
+            $stats = html_writer::tag('span', get_string('answered', 'qpractice') . ': ' . $answered)
+                . html_writer::tag('span', get_string('correct', 'qpractice') . ': ' . $right . '/' . $answered
+                    . ' (' . $pct . '%)')
+                . html_writer::tag('span', get_string('score', 'qpractice') . ': '
+                    . format_float($session->marksobtained, 2) . '/' . format_float($session->totalmarks, 2));
 
-        $stats = html_writer::tag('span', get_string('answered', 'qpractice') . ': ' . $answered)
-            . html_writer::tag('span', get_string('correct', 'qpractice') . ': ' . $right . '/' . $answered
-                . ' (' . $pct . '%)')
-            . html_writer::tag('span', get_string('score', 'qpractice') . ': '
-                . format_float($session->marksobtained, 2) . '/' . format_float($session->totalmarks, 2));
+            $bar = html_writer::div('', 'progress-bar', [
+                'style' => 'width: ' . $pct . '%;',
+                'role' => 'progressbar',
+                'aria-valuenow' => $pct,
+                'aria-valuemin' => 0,
+                'aria-valuemax' => 100,
+            ]);
 
-        $bar = html_writer::div('', 'progress-bar', [
-            'style' => 'width: ' . $pct . '%;',
-            'role' => 'progressbar',
-            'aria-valuenow' => $pct,
-            'aria-valuemin' => 0,
-            'aria-valuemax' => 100,
-        ]);
-
-        return html_writer::div(
-            html_writer::tag(
+            $content .= html_writer::tag(
                 'div',
                 $stats,
                 ['class' => 'qpractice-progress-stats d-flex flex-wrap justify-content-between gap-2 mb-1']
             )
-            . html_writer::div($bar, 'progress', ['style' => 'height: .5rem;']),
+                . html_writer::div($bar, 'progress', ['style' => 'height: .5rem;']);
+        }
+
+        return html_writer::div(
+            $content,
             'qpractice-progress card card-body py-2 mb-3',
             ['aria-label' => get_string('attemptprogress', 'qpractice')]
         );
+    }
+
+    /**
+     * The line at the top of the progress summary saying what the student is practising.
+     *
+     * @param stdClass $qpractice The qpractice instance.
+     * @param stdClass $session The qpractice_session record.
+     * @param question_usage_by_activity $quba The session's question usage.
+     * @return string Rendered HTML, or '' if there is no current question or stage.
+     */
+    protected function attempt_progress_context(
+        stdClass $qpractice,
+        stdClass $session,
+        question_usage_by_activity $quba
+    ): string {
+        global $DB;
+
+        $items = [];
+        if (!empty($qpractice->pathmode)) {
+            $status = qpractice_get_path_status($qpractice->id, $session->userid);
+            if (!$status) {
+                return '';
+            }
+            $items[] = html_writer::tag('strong', get_string('pathstagestatus', 'qpractice', (object) [
+                'stage' => $status->stageno,
+                'total' => $status->totalstages,
+                'category' => format_string($status->categoryname),
+            ]));
+            if ($status->targetpercent !== null) {
+                $items[] = get_string('pathstagescoretarget', 'qpractice', (object) [
+                    'score' => $status->stagepercent ?? 0,
+                    'target' => $status->targetpercent,
+                ]);
+                if ($status->questionsneeded > 0) {
+                    $items[] = get_string(
+                        $status->questionsneeded == 1 ? 'pathquestionneeded' : 'pathquestionsneeded',
+                        'qpractice',
+                        $status->questionsneeded
+                    );
+                }
+            } else if ($status->stagepercent !== null) {
+                $items[] = get_string('pathstagescore', 'qpractice', $status->stagepercent);
+            }
+        } else {
+            $slots = $quba->get_slots();
+            $slot = end($slots);
+            $question = $slot ? $quba->get_question($slot, false) : null;
+            if (!$question) {
+                return '';
+            }
+            $name = $DB->get_field('question_categories', 'name', ['id' => $question->category]);
+            if ($name === false) {
+                return '';
+            }
+            $items[] = html_writer::tag('strong', get_string('currentcategory', 'qpractice', format_string($name)));
+        }
+
+        $html = '';
+        foreach ($items as $item) {
+            $html .= html_writer::tag('span', $item);
+        }
+        return html_writer::div($html, 'qpractice-progress-context d-flex flex-wrap gap-3');
     }
 
 

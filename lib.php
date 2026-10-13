@@ -109,7 +109,7 @@ function upsert_categories(stdClass $qpractice) {
 
 /**
  * Replace the category path stages for this instance from the submitted repeat_elements
- * rows (pathstagecategory[], pathstagetarget[], pathstageonachieve[]).
+ * rows (pathstagecategory[], pathstagetarget[], pathstageonachieve[], pathstagegotocategory[]).
  *
  * Called for both create and update; when pathmode is off, any previously saved stages
  * are removed so a later switch back to path mode starts from a clean slate.
@@ -137,6 +137,7 @@ function upsert_category_path(stdClass $qpractice) {
         // A stage that stays put never uses its target, and the form hides it.
         $target = $onachieve === 'stay' ? '' : ($qpractice->pathstagetarget[$i] ?? '');
         $minquestions = $onachieve === 'stay' ? 0 : (int) ($qpractice->pathstageminquestions[$i] ?? 0);
+        $gotocategoryid = $onachieve === 'gotocategory' ? (int) ($qpractice->pathstagegotocategory[$i] ?? 0) : 0;
         $recordstoinsert[] = (object) [
             'qpracticeid' => $qpractice->id,
             'categoryid' => $categoryid,
@@ -144,6 +145,7 @@ function upsert_category_path(stdClass $qpractice) {
             'targetpercent' => $target === '' ? null : (int) $target,
             'minquestions' => max(0, $minquestions),
             'onachieve' => $onachieve,
+            'gotocategoryid' => $gotocategoryid ?: null,
         ];
     }
 

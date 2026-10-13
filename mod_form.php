@@ -400,6 +400,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $categoryoptions = $categorylabels;
         $onachieveoptions = [
             'nextstage' => get_string('onachieve_nextstage', 'qpractice'),
+            'gotocategory' => get_string('onachieve_gotocategory', 'qpractice'),
             'stay' => get_string('onachieve_stay', 'qpractice'),
         ];
 
@@ -409,10 +410,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
         // A saved stage's category may since have been emptied; keep it selectable, or the
         // autocomplete would silently drop it.
         foreach ($existingstages as $stage) {
-            if (!isset($categoryoptions[$stage->categoryid])) {
-                $name = $DB->get_field('question_categories', 'name', ['id' => $stage->categoryid]);
-                if ($name !== false) {
-                    $categoryoptions[$stage->categoryid] = format_string($name);
+            foreach ([$stage->categoryid, $stage->gotocategoryid] as $categoryid) {
+                if ($categoryid && !isset($categoryoptions[$categoryid])) {
+                    $name = $DB->get_field('question_categories', 'name', ['id' => $categoryid]);
+                    if ($name !== false) {
+                        $categoryoptions[$categoryid] = format_string($name);
+                    }
                 }
             }
         }
@@ -434,6 +437,11 @@ class mod_qpractice_mod_form extends moodleform_mod {
             $mform->createElement('text', 'pathstagetarget', '', ['size' => 3]),
             $mform->createElement('text', 'pathstageminquestions', '', ['size' => 3]),
             $mform->createElement('select', 'pathstageonachieve', '', $onachieveoptions),
+            $mform->createElement('autocomplete', 'pathstagegotocategory', '', $categoryoptions, [
+                'placeholder' => get_string('pathstagecategorysearch', 'qpractice'),
+                'noselectionstring' => get_string('pathstagecategorynone', 'qpractice'),
+                'valuehtmlcallback' => [self::class, 'category_option_html'],
+            ]),
             // All of a stage's buttons on one row. repeat_elements() finds the remove button
             // by name, so it still works inside the group.
             $mform->createElement('group', 'pathstageactions', '', [
@@ -468,6 +476,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
             'pathstagetarget' => ['type' => PARAM_INT],
             'pathstageminquestions' => ['type' => PARAM_INT, 'default' => 0],
             'pathstageonachieve' => ['type' => PARAM_ALPHA],
+            'pathstagegotocategory' => ['type' => PARAM_INT],
         ];
 
         $stagecount = $this->repeat_elements(
@@ -512,12 +521,19 @@ class mod_qpractice_mod_form extends moodleform_mod {
         foreach ($indexes as $position => $i) {
             $stageno = $position + 1;
             // Each of these fields has a lang string of the same name taking the stage number.
-            $fields = ['pathstagecategory', 'pathstagetarget', 'pathstageminquestions', 'pathstageonachieve'];
+            $fields = [
+                'pathstagecategory',
+                'pathstagetarget',
+                'pathstageminquestions',
+                'pathstageonachieve',
+                'pathstagegotocategory',
+            ];
 
             if ($i === $lastindex) {
                 $mform->removeElement("pathstagetarget[$i]");
                 $mform->removeElement("pathstageminquestions[$i]");
                 $mform->removeElement("pathstageonachieve[$i]");
+                $mform->removeElement("pathstagegotocategory[$i]");
                 $fields = ['pathstagecategory'];
                 $mform->insertElementBefore(
                     $mform->createElement('static', "pathstagefinal[$i]", '', get_string('pathstagefinal', 'qpractice')),
@@ -529,6 +545,8 @@ class mod_qpractice_mod_form extends moodleform_mod {
                 $mform->hideIf("pathstagetarget[$i]", "pathstageonachieve[$i]", 'eq', 'stay');
                 $mform->addHelpButton("pathstageminquestions[$i]", 'pathstageminquestionshelp', 'qpractice');
                 $mform->hideIf("pathstageminquestions[$i]", "pathstageonachieve[$i]", 'eq', 'stay');
+                $mform->addHelpButton("pathstagegotocategory[$i]", 'pathstagegotocategoryhelp', 'qpractice');
+                $mform->hideIf("pathstagegotocategory[$i]", "pathstageonachieve[$i]", 'neq', 'gotocategory');
             }
 
             $mform->getElement("pathstageheading[$i]")->setLabel(get_string('pathstage', 'qpractice', $stageno));
@@ -596,7 +614,8 @@ class mod_qpractice_mod_form extends moodleform_mod {
             return;
         }
 
-        foreach (['pathstagecategory', 'pathstagetarget', 'pathstageminquestions', 'pathstageonachieve'] as $name) {
+        $names = ['pathstagecategory', 'pathstagetarget', 'pathstageminquestions', 'pathstageonachieve', 'pathstagegotocategory'];
+        foreach ($names as $name) {
             if ($mform->elementExists("{$name}[$pressed]") && $mform->elementExists("{$name}[$other]")) {
                 $a = $mform->getElement("{$name}[$pressed]");
                 $b = $mform->getElement("{$name}[$other]");
@@ -710,17 +729,24 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $pathstagetarget = [];
         $pathstageminquestions = [];
         $pathstageonachieve = [];
+        $pathstagegotocategory = [];
         foreach ($stages as $stage) {
             $pathstagecategory[] = $stage->categoryid;
             $pathstagetarget[] = $stage->targetpercent;
             $pathstageminquestions[] = $stage->minquestions;
             $pathstageonachieve[] = $stage->onachieve;
+            $pathstagegotocategory[] = $stage->gotocategoryid;
         }
         if ($pathstagecategory) {
             $defaultvalues->pathstagecategory = $pathstagecategory;
             $defaultvalues->pathstagetarget = $pathstagetarget;
-            $defaultvalues->pathstageminquestions = $pathstageminquestions;
+            // The repeat_elements() default is stored under the flat "name[i]" key, which the
+            // element finds before a nested array, so the saved values must use it too.
+            foreach ($pathstageminquestions as $i => $value) {
+                $defaultvalues->{"pathstageminquestions[$i]"} = $value;
+            }
             $defaultvalues->pathstageonachieve = $pathstageonachieve;
+            $defaultvalues->pathstagegotocategory = $pathstagegotocategory;
         }
 
         parent::set_data($defaultvalues);
@@ -761,7 +787,8 @@ class mod_qpractice_mod_form extends moodleform_mod {
     /**
      * Validate the repeatable path stage rows: every stage needs a category, no
      * category may appear twice, and every non-final stage needs a target percent
-     * (unless it's explicitly set to "stay" rather than advance).
+     * (unless it's explicitly set to "stay" rather than advance). A stage set to
+     * "go to category" must name the category of another stage.
      *
      * @param array $data Submitted form data.
      * @return array Errors keyed by element name.
@@ -774,6 +801,7 @@ class mod_qpractice_mod_form extends moodleform_mod {
         $targets = $data['pathstagetarget'] ?? [];
         $minquestions = $data['pathstageminquestions'] ?? [];
         $onachieve = $data['pathstageonachieve'] ?? [];
+        $gotocategories = $data['pathstagegotocategory'] ?? [];
 
         $seen = [];
         $lastfilled = -1;
@@ -820,6 +848,12 @@ class mod_qpractice_mod_form extends moodleform_mod {
             }
             if ((int) ($minquestions[$i] ?? 0) < 0) {
                 $errors["pathstageminquestions[$i]"] = get_string('pathstageminquestionsinvalid', 'qpractice', $stageno);
+            }
+            if (($onachieve[$i] ?? 'nextstage') === 'gotocategory') {
+                $goto = (int) ($gotocategories[$i] ?? 0);
+                if ($goto == $categoryid || !isset($seen[$goto])) {
+                    $errors["pathstagegotocategory[$i]"] = get_string('pathstagegotocategoryinvalid', 'qpractice', $stageno);
+                }
             }
         }
 

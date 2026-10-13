@@ -77,7 +77,13 @@ if (data_submitted()) {
         if (!empty($qpractice->pathmode)) {
             $advanced = qpractice_record_path_answer($qpractice->id, $session->userid, $obtainedmarks, $maxmarks);
             if ($advanced) {
-                \core\notification::add(get_string('pathtargetunlocked', 'qpractice'), \core\notification::SUCCESS);
+                $status = qpractice_get_path_status($qpractice->id, $session->userid);
+                $a = (object) [
+                    'stage' => $status->stageno,
+                    'total' => $status->totalstages,
+                    'category' => format_string($status->categoryname),
+                ];
+                \core\notification::add(get_string('pathtargetunlocked', 'qpractice', $a), \core\notification::SUCCESS);
             }
         }
 
@@ -122,7 +128,7 @@ $headtags .= $quba->render_question_head_html($slot);
 $headtags .= question_engine::initialise_js();
 // Start output.
 $PAGE->set_url('/mod/qpractice/attempt.php', ['id' => $sessionid]);
-$title = get_string('practicesession', 'qpractice', format_string($question->name));
+$title = get_string('practicesession', 'qpractice');
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 $PAGE->set_context($context);
@@ -153,16 +159,12 @@ $html .= $quba->render_question($slot, $options, $slot);
 
 // Finish the question form.
 $html .= html_writer::start_tag('div');
+// Stop practice is in the progress summary above, away from this button.
 $html .= html_writer::empty_tag('input', [
             'type' => 'submit',
-            'class' => 'qpbtn submit',
+            'class' => 'btn btn-primary',
             'name' => 'next',
             'value' => get_string('nextquestion', 'qpractice')]);
-$html .= html_writer::empty_tag('input', [
-            'type' => 'submit',
-            'class' => 'qpbtn submit',
-            'name' => 'finish',
-            'value' => get_string('stoppractice', 'qpractice')]);
 $html .= html_writer::end_tag('div');
 $html .= html_writer::end_tag('form');
 

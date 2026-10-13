@@ -150,6 +150,10 @@ class restore_qpractice_activity_structure_step extends restore_questions_activi
         }
         $data->qpracticeid = $this->get_new_parentid('qpractice');
         $data->categoryid = $categoryid;
+        if (!empty($data->gotocategoryid)) {
+            // If the destination can't be found the stage stops advancing, as for "stay".
+            $data->gotocategoryid = $this->map_question_category((int) $data->gotocategoryid);
+        }
         $DB->insert_record('qpractice_category_path', $data);
     }
 

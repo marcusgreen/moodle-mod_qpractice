@@ -459,9 +459,88 @@ function qpractice_current_path_category(int $qpracticeid, int $userid): ?int {
 }
 
 /**
+ * Return the stage a student moves to on reaching a stage's target.
+ *
+ * That is the following stage, or for a stage set to "go to category", the stage using
+ * that category, which may be earlier or later in the path.
+ *
+ * @param array $stages Stages as returned by qpractice_get_path_stages().
+ * @param int $index Index in $stages of the stage whose target was reached.
+ * @return stdClass|null The destination stage, or null if this stage never moves on.
+ */
+function qpractice_path_destination_stage(array $stages, int $index): ?stdClass {
+    $stage = $stages[$index];
+    if ($stage->targetpercent === null) {
+        return null;
+    }
+    if ($stage->onachieve === 'nextstage') {
+        return $stages[$index + 1] ?? null;
+    }
+    if ($stage->onachieve === 'gotocategory' && !empty($stage->gotocategoryid)) {
+        foreach ($stages as $i => $s) {
+            if ($i !== $index && $s->categoryid == $stage->gotocategoryid) {
+                return $s;
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * Describe where a student is on the category path, so it can be shown to them while
+ * they practise.
+ *
+ * The returned object has:
+ * - stageno, totalstages: the stage's position (from 1) and the number of stages.
+ * - categoryid, categoryname: the stage's category (name unformatted, '' if it is gone).
+ * - stagepercent: score on this stage so far, or null before any marks are recorded.
+ * - targetpercent: score needed to move on, or null if the stage cannot advance (the
+ *   final stage, or one set to stay).
+ * - questionsneeded: answers still needed before the target can move them on.
+ *
+ * @param int $qpracticeid
+ * @param int $userid
+ * @return stdClass|null Null if this instance has no path stages.
+ */
+function qpractice_get_path_status(int $qpracticeid, int $userid): ?stdClass {
+    global $DB;
+
+    $stages = qpractice_get_path_stages($qpracticeid);
+    if (!$stages) {
+        return null;
+    }
+    $progress = qpractice_get_or_create_path_progress($qpracticeid, $userid);
+
+    // Fall back to the first stage if the student's stage no longer exists, as
+    // qpractice_current_path_category() does.
+    $index = 0;
+    foreach ($stages as $i => $s) {
+        if ($s->sortorder == $progress->currentsortorder) {
+            $index = $i;
+            break;
+        }
+    }
+    $stage = $stages[$index];
+    $canadvance = qpractice_path_destination_stage($stages, $index) !== null;
+
+    return (object) [
+        'stageno' => $index + 1,
+        'totalstages' => count($stages),
+        'categoryid' => (int) $stage->categoryid,
+        'categoryname' => (string) $DB->get_field('question_categories', 'name', ['id' => $stage->categoryid]),
+        'stagepercent' => $progress->stagetotal > 0
+            ? (int) round($progress->stagecorrect / $progress->stagetotal * 100)
+            : null,
+        'targetpercent' => $canadvance ? (int) $stage->targetpercent : null,
+        'questionsneeded' => $canadvance ? max(0, (int) $stage->minquestions - (int) $progress->stageanswered) : 0,
+    ];
+}
+
+/**
  * Record the outcome of one answered question against the student's current path stage,
- * and advance them to the next stage if their running percentage now meets its target
- * and they have answered at least the stage's minimum number of questions.
+ * and move them on if their running percentage now meets its target and they have
+ * answered at least the stage's minimum number of questions. They move to the next
+ * stage, or to the stage set by "go to category".
  *
  * @param int $qpracticeid
  * @param int $userid
@@ -497,11 +576,9 @@ function qpractice_record_path_answer(int $qpracticeid, int $userid, float $obta
     $progress->timemodified = time();
 
     $advanced = false;
-    $nextstage = $stages[$stageindex + 1] ?? null;
+    $nextstage = qpractice_path_destination_stage($stages, $stageindex);
     if (
-        $stage->targetpercent !== null
-        && $stage->onachieve === 'nextstage'
-        && $nextstage
+        $nextstage
         && $progress->stagetotal > 0
         && $progress->stageanswered >= $stage->minquestions
         && ($progress->stagecorrect / $progress->stagetotal * 100) >= $stage->targetpercent

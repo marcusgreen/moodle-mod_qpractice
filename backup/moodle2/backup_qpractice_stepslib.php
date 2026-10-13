@@ -55,7 +55,7 @@ class backup_qpractice_activity_structure_step extends backup_questions_activity
         // Ordered stages for path mode.
         $pathstages = new backup_nested_element('pathstages');
         $pathstage = new backup_nested_element('pathstage', ['id'], [
-            'categoryid', 'sortorder', 'targetpercent', 'minquestions', 'onachieve']);
+            'categoryid', 'sortorder', 'targetpercent', 'minquestions', 'onachieve', 'gotocategoryid']);
 
         $sessions = new backup_nested_element('sessions');
 
